@@ -1,0 +1,23 @@
+{
+  "name": "my-project-dependencies",
+  "version-string": "0.1.0",
+  "dependencies": [
+    "glew",
+    "glfw3",
+    "glm",
+    "soil",
+    "rapidxml",
+    "freetype",
+    "yaml-cpp",
+	"gdal",
+	"libosmium"
+  ],
+  "features": {
+    "tests": {
+      "description": "Build GoogleTest suite",
+      "dependencies": [
+        "gtest"
+      ]
+    }
+  }
+}
