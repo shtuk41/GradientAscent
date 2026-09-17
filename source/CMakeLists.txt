@@ -1,6 +1,6 @@
 
 set(MY_HEADERS
-	"${CMAKE_SOURCE_DIR}/include/gpxparse.h" 
+	"${CMAKE_SOURCE_DIR}/include/gpx.h" 
 )
 
 source_group("Header Files" FILES ${MY_HEADERS})
@@ -12,17 +12,19 @@ add_executable(GradientAscent
 
 target_sources(GradientAscent PRIVATE 
     ${MY_HEADERS}
+	${RAPIDXML_INCLUDE_DIRS}
 )
 
 # Headers
 target_include_directories(GradientAscent PRIVATE 
 
 	"${CMAKE_SOURCE_DIR}/include"
+	${RAPIDXML_INCLUDE_DIRS}
 )
 
 # Link the imported target
-target_link_libraries(GradientAscent PRIVATE 
-		gdal)
+#target_link_libraries(GradientAscent PRIVATE 
+#		gdal)
 
 # get_target_property(CURRENT_INCLUDES GradientAscent INCLUDE_DIRECTORIES)
 # message(STATUS "GradientAscent target includes: ${CURRENT_INCLUDES}")

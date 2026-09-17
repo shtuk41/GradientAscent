@@ -24,13 +24,14 @@ find_package(freetype CONFIG REQUIRED)
 find_package(yaml-cpp CONFIG REQUIRED)
 find_package(gdal REQUIRED)
 find_path(OSMIUM_INCLUDE_DIRS "osmium/version.hpp" REQUIRED)
+find_path(RAPIDXML_INCLUDE_DIRS "rapidxml/rapidxml.hpp")
 
-#add_subdirectory(source)
+add_subdirectory(source)
 
-if(BUILD_TESTING)
-    enable_testing()
-    add_subdirectory(tests)
-endif()
+#if(BUILD_TESTING)
+#    enable_testing()
+#    add_subdirectory(tests)
+#endif()
 
 #note: add it to include in source cmake later
 #target_include_directories(GradientAscent PRIVATE 

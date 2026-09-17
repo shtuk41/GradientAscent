@@ -1,5 +1,5 @@
 #include <iostream>
-#include <gpxparse.h>
+#include <gpx.h>
 
 int main()
 {
