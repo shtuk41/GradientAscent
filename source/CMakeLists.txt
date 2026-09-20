@@ -1,6 +1,6 @@
 
 set(MY_HEADERS
-	"${CMAKE_SOURCE_DIR}/include/gpx.h" 
+	"${CMAKE_SOURCE_DIR}/include/activity_stream.h" 
 )
 
 source_group("Header Files" FILES ${MY_HEADERS})
