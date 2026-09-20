@@ -23,8 +23,9 @@ target_include_directories(GradientAscent PRIVATE
 )
 
 # Link the imported target
-#target_link_libraries(GradientAscent PRIVATE 
-#		gdal)
+target_link_libraries(GradientAscent PRIVATE 
+    GDAL::GDAL
+)
 
 # get_target_property(CURRENT_INCLUDES GradientAscent INCLUDE_DIRECTORIES)
 # message(STATUS "GradientAscent target includes: ${CURRENT_INCLUDES}")
