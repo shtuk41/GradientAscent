@@ -1,4 +1,4 @@
-# GeoRide Simulator
+# GradientAscent Simulator
 
 A simulator for riding real-world geospatial terrain on a smart bike trainer.. 
 
