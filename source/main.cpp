@@ -40,6 +40,7 @@ int main()
 				float difference = t.elevation - elevation;
 
 				std::cout << std::format("{}tiff elevation {}, difference is {} {}\n", GREEN, elevation, difference, RESET);
+				tiffHandler.putTreckPoint(t.lat, t.lon);
 			}
 			else
 			{
