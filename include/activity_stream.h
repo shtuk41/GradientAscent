@@ -1,3 +1,5 @@
+#pragma once
+
 #include <rapidxml/rapidxml.hpp>
 
 #include <algorithm>
@@ -11,9 +13,7 @@
 #include <vector>
 #include <utility>
 
-constexpr float invalid_value = std::numeric_limits<float>::quiet_NaN();
-
-namespace fs = std::filesystem;
+#include <common_defs.h>
 
 /// <summary>
 /// This class represents a single point or activity in stream

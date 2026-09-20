@@ -1,6 +1,8 @@
 
 set(MY_HEADERS
+    "${CMAKE_SOURCE_DIR}/include/common_defs.h" 
 	"${CMAKE_SOURCE_DIR}/include/activity_stream.h" 
+    "${CMAKE_SOURCE_DIR}/include/geo_data_handler.h"
 )
 
 source_group("Header Files" FILES ${MY_HEADERS})

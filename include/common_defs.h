@@ -1,0 +1,12 @@
+#pragma once
+
+#include <limits>
+
+constexpr float invalid_value = std::numeric_limits<float>::quiet_NaN();
+namespace fs = std::filesystem;
+
+const std::string RESET = "\033[0m";
+const std::string RED = "\033[31m";
+const std::string GREEN = "\033[32m";
+
+
