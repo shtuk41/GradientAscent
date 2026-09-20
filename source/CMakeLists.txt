@@ -27,6 +27,7 @@ target_include_directories(GradientAscent PRIVATE
 # Link the imported target
 target_link_libraries(GradientAscent PRIVATE 
     GDAL::GDAL
+    CURL::libcurl
 )
 
 # get_target_property(CURRENT_INCLUDES GradientAscent INCLUDE_DIRECTORIES)

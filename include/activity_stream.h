@@ -10,6 +10,7 @@
 #include <limits>
 #include <ranges>
 #include <stdexcept>
+#include <tuple>
 #include <vector>
 #include <utility>
 
@@ -61,6 +62,31 @@ public:
 		std::vector<std::pair<float, float>> positions(position_view.begin(), position_view.end());
 		return positions;
 	}
+
+	virtual std::tuple<float, float, float, float> getMinMaxLatLon() const
+	{
+		if (trackpoints.size() == 0)
+			return { invalid_value, invalid_value, invalid_value, invalid_value };
+
+		float minlat = trackpoints[0].lat;
+		float maxlat = trackpoints[0].lat;
+		float minlon = trackpoints[0].lon;
+		float maxlon = trackpoints[0].lon;
+
+		for (const trackpoint& pt : trackpoints)
+		{
+			if (pt.lat < minlat)
+				minlat = pt.lat;
+			if (pt.lat > maxlat)
+				maxlat = pt.lat;
+			if (pt.lon < minlon)
+				minlon = pt.lon;
+			if (pt.lon > maxlon)
+				maxlon = pt.lon;
+		}
+
+		return { minlat, maxlat, minlon, maxlon };
+ 	}
 };
 
 /// <summary>

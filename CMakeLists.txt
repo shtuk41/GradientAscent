@@ -23,6 +23,7 @@ find_package(GLEW CONFIG REQUIRED)
 find_package(freetype CONFIG REQUIRED)
 find_package(yaml-cpp CONFIG REQUIRED)
 find_package(gdal REQUIRED)
+find_package(CURL CONFIG REQUIRED)
 find_path(OSMIUM_INCLUDE_DIRS "osmium/version.hpp" REQUIRED)
 find_path(RAPIDXML_INCLUDE_DIRS "rapidxml/rapidxml.hpp")
 
