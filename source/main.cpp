@@ -19,13 +19,17 @@ int main()
 
 	fs::path testgpxpath(R"(D:\Files\GradientAscent\data\Afternoon_Ride.gpx)");
 	//fs::path geofilepath(R"(D:\Files\GradientAscent\data\rasters_USGS10m\output_USGS10m.tif)");
-	fs::path geofilepath(R"(D:\Files\GradientAscent\data\route_elevation.tif)");
-
-	tiff_data_handler tiffHandler(geofilepath);
 
 	try
 	{
 		gpx track(testgpxpath);
+
+		auto [minlat, maxlat, minlon, maxlon] = track.getMinMaxLatLon();
+		std::cout << std::format("{}, {}, {}, {}\n", minlat, maxlat, minlon, maxlon);
+		ot_data_download(minlat, maxlat, minlon, maxlon, 0.01f);
+		fs::path geofilepath(R"(route_elevation.tif)");
+		tiff_data_handler tiffHandler(geofilepath);
+
 		auto trackpoints = track.getTrackpoints();
 		std::cout << std::format("number of points: {}\n", trackpoints.size());
 
@@ -47,12 +51,6 @@ int main()
 				std::cout << std::format("{}tiff elevation is nan{}\n", RED, RESET);
 			}
 		}
-
-		auto [minlat, maxlat, minlon, maxlon] = track.getMinMaxLatLon();
-
-		std::cout << std::format("{}, {}, {}, {}\n", minlat, maxlat, minlon, maxlon);
-
-		//ot_data_download(minlat, maxlat, minlon, maxlon, 0.01f);
 	}
 	catch (std::exception& e)
 	{

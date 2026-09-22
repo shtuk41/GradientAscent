@@ -155,10 +155,8 @@ int ot_data_download(float minlat, float maxlat, float minlon, float maxlon, flo
 	float minlonsafe = minlon - delta;
 	float maxlonsafe = maxlon + delta;
 
+
 	std::cout << std::format("Using the safe bounding box: minlatsafe {}, maxlatsafe {}, minlonsafe {}, maxlonsafe {}\n", minlatsafe, maxlatsafe, minlonsafe, maxlonsafe);
-
-
-
 
 	// 1. Construct the URL safely
 	std::string url = "https://portal.opentopography.org/API/usgsdem?" // Ensure the correct API endpoint path
