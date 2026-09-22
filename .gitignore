@@ -33,3 +33,5 @@ packages/
 
 build/
 ThirdParty/imgui/
+
+include/common_defs.h

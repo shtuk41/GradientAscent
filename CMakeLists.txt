@@ -16,6 +16,14 @@ set(VCPKG_FORCE_SYSTEM_BINARIES ON CACHE BOOL "" FORCE)
 
 project(GradientAscent VERSION 0.1)
 
+set(OPENTOPOGRAPHY_API_KEY "YOUR_API_KEY_HERE" CACHE STRING "OpenTopography API Key")
+
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/common_defs.h.in"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/common_defs.h"
+    @ONLY
+)
+
 find_package(glfw3 CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 find_package(soil CONFIG REQUIRED)
