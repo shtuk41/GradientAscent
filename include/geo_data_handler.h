@@ -37,7 +37,7 @@ public:
 		{
 			GDALDataset* poSrcDS = (GDALDataset*)GDALOpen(geoFilePath.string().c_str(), GA_ReadOnly);
 
-			if (poDataset == nullptr) 
+			if (poSrcDS == nullptr)
 			{
 				throw std::runtime_error(std::format("Could not open the TIFF file! {}", geoFilePath.string()));
 			}
@@ -145,8 +145,12 @@ size_t write_data(void* ptr, size_t size, size_t nmemb, void* stream) {
 	return total_size;
 }
 
-int ot_data_download(float minlat, float maxlat, float minlon, float maxlon, float delta)
+int ot_data_download(const std::string& filename, float minlat, float maxlat, float minlon, float maxlon, float delta)
 {
+	//
+	if (fs::exists(filename))
+		return 0;
+
 	// Variables for your URL construction
 	std::string api_key = OPENTOPOGRAPHY_API_KEY;
 
@@ -174,7 +178,7 @@ int ot_data_download(float minlat, float maxlat, float minlon, float maxlon, flo
 
 	if (curl) {
 		// Open the local destination file for writing in binary mode
-		std::ofstream out_file("route_elevation.tif", std::ios::binary);
+		std::ofstream out_file(filename, std::ios::binary);
 		if (!out_file.is_open()) {
 			std::cerr << "Error: Could not open output file for writing." << std::endl;
 			curl_easy_cleanup(curl);

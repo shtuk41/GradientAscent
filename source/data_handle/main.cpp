@@ -1,6 +1,10 @@
 // CTLab.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 
+#include <exception>
+#include <format>
+#include <fstream>
+#include <iostream>
 #include <memory>
 
 #include "imgui.h"
@@ -10,12 +14,16 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include <iostream>
+#include <gdal.h>
+#include "gdal_priv.h"
+#include "cpl_conv.h"
 
 #include <axisPlane.h>
 #include <controls.h>
 #include <volume.h>
 #include <window.h>
+#include <activity_stream.h>
+#include <geo_data_handler.h>
 
 std::unique_ptr<Context> context;
 
@@ -26,6 +34,50 @@ static void glfw_error_callback(int error, const char* description)
 
 int main()
 {
+	GDALAllRegister();
+
+	fs::path testgpxpath(R"(D:\Files\GradientAscent\data\Afternoon_Ride.gpx)");
+
+	try
+	{
+		gpx track(testgpxpath);
+
+		std::string trackName = testgpxpath.stem().string();;
+
+		auto [minlat, maxlat, minlon, maxlon] = track.getMinMaxLatLon();
+		std::cout << std::format("{}, {}, {}, {}\n", minlat, maxlat, minlon, maxlon);
+		ot_data_download(trackName + ".tif", minlat, maxlat, minlon, maxlon, 0.01f);
+		fs::path geofilepath(trackName + ".tif");
+		tiff_data_handler tiffHandler(geofilepath);
+
+		auto trackpoints = track.getTrackpoints();
+		std::cout << std::format("number of points: {}\n", trackpoints.size());
+
+		for (auto& t : trackpoints)
+		{
+			std::cout << std::format("Lat {}, Lon {}, Elevation {} at time {}\n", t.lat, t.lon, t.elevation, t.time);
+
+			float elevation = tiffHandler.getElevation(t.lat, t.lon);
+
+			if (!std::isnan(elevation))
+			{
+				float difference = t.elevation - elevation;
+
+				std::cout << std::format("{}tiff elevation {}, difference is {} {}\n", GREEN, elevation, difference, RESET);
+				tiffHandler.putTreckPoint(t.lat, t.lon);
+			}
+			else
+			{
+				std::cout << std::format("{}tiff elevation is nan{}\n", RED, RESET);
+			}
+		}
+	}
+	catch (std::exception& e)
+	{
+		std::cout << std::format("Global exception: {}", e.what());
+		return 0;
+	}
+
 	glfwSetErrorCallback(glfw_error_callback);
 
 	if (!glfwInit())
@@ -59,19 +111,6 @@ int main()
 
 	Axes3d axes3d(1.2, 1.2, -1.2);
 	axes3d.Setup();
-
-	Volume volume(512, 512, 512, &cameraGlobal);
-	volume.Setup();
-
-	//Axis
-	AxisPlane planeXY(glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec4(0.0f, 1.0f, 0.0f, 0.1f), 2);
-	planeXY.Setup();
-	//Coronal
-	AxisPlane planeXZ(glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec4(0.0f, 0.0f, 1.0f, 0.1f), 2);
-	planeXZ.Setup();
-	//Sagittal
-	AxisPlane planeYZ(glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec4(1.0f, 0.0f, 0.0f, 0.1f), 2);
-	planeYZ.Setup();
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -192,33 +231,10 @@ int main()
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glDisable(GL_DEPTH_TEST);
 
-		glUseProgram(volume.GetProgramId());
-		volume.UpdateModel(view_matrix);
-		volume.SetProjection(projection_matrix);
-		volume.Draw();
-
-		glUseProgram(planeXY.GetProgramId());
-		planeXY.UpdateModel(view_matrix);
-		planeXY.SetProjection(projection_matrix);
-		planeXY.Draw();
-
-		planeXZ.UpdateModel(view_matrix);
-		planeXZ.SetProjection(projection_matrix);
-		planeXZ.Draw();
-
-		planeYZ.UpdateModel(view_matrix);
-		planeYZ.SetProjection(projection_matrix);
-		planeYZ.Draw();
-
-
-
-		if (saveFrameColorClicked > 2)
-		{
-			context->SaveImage();
-			saveFrameColorClicked = 0;
-		}
-		else if (saveFrameColorClicked > 0)
-			saveFrameColorClicked++;
+		//glUseProgram(planeXY.GetProgramId());
+		//planeXY.UpdateModel(view_matrix);
+		//planeXY.SetProjection(projection_matrix);
+		//planeXY.Draw();
 
 		glfwSwapBuffers(window.GetHandler());
 
@@ -238,14 +254,3 @@ int main()
 	return 0;
 
 }
-
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
-
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
