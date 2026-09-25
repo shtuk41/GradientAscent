@@ -34,8 +34,30 @@ find_package(gdal REQUIRED)
 find_package(CURL CONFIG REQUIRED)
 find_path(OSMIUM_INCLUDE_DIRS "osmium/version.hpp" REQUIRED)
 find_path(RAPIDXML_INCLUDE_DIRS "rapidxml/rapidxml.hpp")
+find_package(Qt6 QUIET COMPONENTS 
+    Core 
+	Qml 
+	Quick 
+	Gui 
+	Widgets 
+	OpenGL
+	OpenGLWidgets
+)
 
-add_subdirectory(source)
+
+message(STATUS "----------------------------------------")
+message(STATUS "FOUND QT VERSION: ${Qt6_VERSION}")
+message(STATUS "QT BINARY DIR:    ${Qt6_BINARY_DIR}")
+message(STATUS "----------------------------------------")
+
+if(NOT Qt6_FOUND)
+    message(STATUS "----------------------------------------------------------------")
+    message(STATUS "Qt6 not found. Please set -DQt6_DIR=/path/to/Qt/6.x.x/.../lib/cmake/Qt6")
+    message(STATUS "----------------------------------------------------------------")
+endif()
+
+#add_subdirectory(source/main)
+add_subdirectory(source/data_handle)
 
 #if(BUILD_TESTING)
 #    enable_testing()
