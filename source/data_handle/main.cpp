@@ -53,24 +53,40 @@ int main()
 		auto trackpoints = track.getTrackpoints();
 		std::cout << std::format("number of points: {}\n", trackpoints.size());
 
+		std::vector<std::tuple<int, int, float>> routeData;
+		routeData.reserve(trackpoints.size());
+
 		for (auto& t : trackpoints)
 		{
 			std::cout << std::format("Lat {}, Lon {}, Elevation {} at time {}\n", t.lat, t.lon, t.elevation, t.time);
 
-			float elevation = tiffHandler.getElevation(t.lat, t.lon);
+			float elevation;
+				
+			GEO_DATA_ERROR error = tiffHandler.getElevation(t.lat, t.lon, elevation);
 
-			if (!std::isnan(elevation))
+			if (error == GEO_DATA_ERROR::GEO_DATA_NO_ERROR)
 			{
 				float difference = t.elevation - elevation;
 
 				std::cout << std::format("{}tiff elevation {}, difference is {} {}\n", GREEN, elevation, difference, RESET);
 				tiffHandler.putTreckPoint(t.lat, t.lon);
+
+				int row, col;
+
+				GEO_DATA_ERROR pixelError = tiffHandler.getPixelCoordinate(t.lat, t.lon, row, col);
+
+				if (pixelError == GEO_DATA_ERROR::GEO_DATA_NO_ERROR)
+				{
+					routeData.push_back({ row, col, elevation});
+				}
 			}
 			else
 			{
 				std::cout << std::format("{}tiff elevation is nan{}\n", RED, RESET);
 			}
 		}
+
+		std::cout << std::format("Saved points: {} vs reserved {}\n", routeData.size(), routeData.capacity());
 	}
 	catch (std::exception& e)
 	{

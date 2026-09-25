@@ -9,6 +9,12 @@
 
 #include <common_defs.h>
 
+enum class GEO_DATA_ERROR
+{
+	GEO_DATA_NO_ERROR = 0,
+	GEO_DATA_OUT_OF_BOUNDS = -1
+};
+
 struct geo_point
 {
 	float lat;
@@ -21,7 +27,7 @@ struct geo_point
 class geo_data_handler
 {
 public:
-	virtual float getElevation(float lat, float lon) = 0;
+	virtual GEO_DATA_ERROR getElevation(float lat, float lon, float& eleevation) = 0;
 };
 
 class tiff_data_handler : public geo_data_handler
@@ -75,7 +81,7 @@ public:
 		}
 	}
 
-	float getElevation(float lat, float lon)
+	GEO_DATA_ERROR getElevation(float lat, float lon, float &elevation)
 	{
 		double dfPixel, dfLine;
 		GDALApplyGeoTransform(adfInvGeoTransform, lon, lat, &dfPixel, &dfLine);
@@ -87,24 +93,35 @@ public:
 			nLine < 0 || nLine >= poDataset->GetRasterYSize()) 
 		{
 			std::cout << std::format("The coordinate lat: {}, lon {} falls outside of this TIFF's boundaries!\n", lat, lon);
-			return invalid_value;
+			return GEO_DATA_ERROR::GEO_DATA_OUT_OF_BOUNDS;
 		}
 
 		GDALRasterBand* poBand = poDataset->GetRasterBand(1);
 
-		float elevationValue = 0.0f;
+		float elevationValue = invalid_value;
 		
 
 		poBand->RasterIO(GF_Read, nPixel, nLine, 1, 1, &elevationValue, 1, 1, GDT_Float32, 0, 0);
 
-		//int hasNoData = 0;
-		//double noDataValue = poBand->GetNoDataValue(&hasNoData);
+		return GEO_DATA_ERROR::GEO_DATA_NO_ERROR;
+	}
 
-		//if (hasNoData && elevationValue == static_cast<float>(noDataValue)) {
-		//	std::cout << "Need to handle no value\n";
-		//}
+	GEO_DATA_ERROR getPixelCoordinate(float lat, float lon, int& row, int& column)
+	{
+		double dfPixel, dfLine;
+		GDALApplyGeoTransform(adfInvGeoTransform, lon, lat, &dfPixel, &dfLine);
 
-		return elevationValue;
+		column = static_cast<int>(dfPixel);
+		row = static_cast<int>(dfLine);
+
+		if (column < 0 || column >= poDataset->GetRasterXSize() ||
+			row < 0 || row >= poDataset->GetRasterYSize())
+		{
+			std::cout << std::format("The coordinate lat: {}, lon {} falls outside of this TIFF's boundaries!\n", lat, lon);
+			return GEO_DATA_ERROR::GEO_DATA_OUT_OF_BOUNDS;
+		}
+
+		return GEO_DATA_ERROR::GEO_DATA_NO_ERROR;
 	}
 
 	void putTreckPoint(float lat, float lon)
