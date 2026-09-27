@@ -37,7 +37,8 @@ int main()
 {
 	GDALAllRegister();
 
-	fs::path testgpxpath(R"(D:\Files\GradientAscent\data\Afternoon_Ride.gpx)");
+	//fs::path testgpxpath(R"(D:\Files\GradientAscent\data\Afternoon_Ride.gpx)");
+	fs::path testgpxpath(R"(D:\Files\GradientAscent\data\Afternoon_Ride_09272026.gpx)");
 
 	std::vector<std::tuple<int, int, float, float>> routeData;
 
@@ -138,7 +139,7 @@ int main()
 
 	Camera cameraGlobal(window.GetHandler(), 3.0);
 
-	glm::vec3 current_pos = glm::vec3(0.0f, 0.0f, -1000.0f );
+	glm::vec3 current_pos = glm::vec3(0.0f, 0.0f, 1000.0f );
 	cameraGlobal.setPosition(current_pos);
 
 	Axes3d axes3d(1.2, 1.2, -1.2);

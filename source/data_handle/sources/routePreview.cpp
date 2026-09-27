@@ -52,7 +52,7 @@ void RoutePreview::Setup()
 
     auto t1 = routeData.front();
 
-    float scale = 0.1f;
+    float scale = 0.5f;
 
     float prevReal = 0.0f;
 
