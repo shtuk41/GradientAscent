@@ -36,13 +36,13 @@ struct Context
 
 	//projection settings
 	float perspectiveFovyRadians = std::numbers::pi_v<float> / 2;
-	bool usePerspectiveProjection = true;
-	char orthoLeft[5];
-	char orthoRight[5];
-	char orthoBottom[5];
-	char orthoTop[5];
-	char orthoNear[5];
-	char orthoFar[5];
+	bool usePerspectiveProjection = false;
+	char orthoLeft[7];
+	char orthoRight[7];
+	char orthoBottom[7];
+	char orthoTop[7];
+	char orthoNear[7];
+	char orthoFar[7];
 
 	Context(GLFWwindow* window);
 	void SaveImage();

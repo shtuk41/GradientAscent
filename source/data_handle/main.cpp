@@ -138,6 +138,9 @@ int main()
 
 	Camera cameraGlobal(window.GetHandler(), 3.0);
 
+	glm::vec3 current_pos = glm::vec3(0.0f, 0.0f, -1000.0f );
+	cameraGlobal.setPosition(current_pos);
+
 	Axes3d axes3d(1.2, 1.2, -1.2);
 	axes3d.Setup();
 
@@ -185,12 +188,12 @@ int main()
 				ImGui::SliderFloat("slider float", &context->perspectiveFovyRadians, 0.1f, 3.0f, "perspective angle = %.3f");
 				ImGui::Text("Orthographic");
 				ImGui::PushItemWidth(40);
-				ImGui::InputText("L", context->orthoLeft, 4); ImGui::SameLine();
-				ImGui::InputText("R", context->orthoRight, 4); ImGui::SameLine();
-				ImGui::InputText("B", context->orthoBottom, 4); ImGui::SameLine();
-				ImGui::InputText("T", context->orthoTop, 4); ImGui::SameLine();
-				ImGui::InputText("N", context->orthoNear, 5); ImGui::SameLine();
-				ImGui::InputText("F", context->orthoFar, 5);
+				ImGui::InputText("L", context->orthoLeft, 6); ImGui::SameLine();
+				ImGui::InputText("R", context->orthoRight, 6); ImGui::SameLine();
+				ImGui::InputText("B", context->orthoBottom, 6); ImGui::SameLine();
+				ImGui::InputText("T", context->orthoTop, 6); ImGui::SameLine();
+				ImGui::InputText("N", context->orthoNear, 6); ImGui::SameLine();
+				ImGui::InputText("F", context->orthoFar, 6);
 				ImGui::PushItemWidth(ImGui::GetWindowWidth());
 				ImGui::Separator();
 				ImGui::Separator();

@@ -8,6 +8,8 @@ A simulator for riding real-world geospatial terrain on a smart bike trainer..
 
 ![First reoute preview in 3d Render](README/routepreview3d.png)
 
+![Another reoute preview in 3d Render](README/routepreview3d_2.png)
+
 <!--## Features
 
 - **Geospatial Processing**: Parsed high-resolution TIFF elevation maps using the [GDAL Library](https://gdal.org/).
