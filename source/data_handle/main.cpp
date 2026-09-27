@@ -18,7 +18,7 @@
 #include "gdal_priv.h"
 #include "cpl_conv.h"
 
-#include <axisPlane.h>
+#include <routePreview.h>
 #include <controls.h>
 #include <volume.h>
 #include <window.h>
@@ -38,6 +38,8 @@ int main()
 
 	fs::path testgpxpath(R"(D:\Files\GradientAscent\data\Afternoon_Ride.gpx)");
 
+	std::vector<std::tuple<int, int, float>> routeData;
+
 	try
 	{
 		gpx track(testgpxpath);
@@ -53,7 +55,6 @@ int main()
 		auto trackpoints = track.getTrackpoints();
 		std::cout << std::format("number of points: {}\n", trackpoints.size());
 
-		std::vector<std::tuple<int, int, float>> routeData;
 		routeData.reserve(trackpoints.size());
 
 		for (auto& t : trackpoints)
@@ -77,7 +78,7 @@ int main()
 
 				if (pixelError == GEO_DATA_ERROR::GEO_DATA_NO_ERROR)
 				{
-					routeData.push_back({ row, col, elevation});
+					routeData.push_back({ row, col, t.elevation });
 				}
 			}
 			else
@@ -128,6 +129,11 @@ int main()
 	Axes3d axes3d(1.2, 1.2, -1.2);
 	axes3d.Setup();
 
+	RoutePreview routePreview(routeData);
+	routePreview.Setup();
+
+
+
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO const& io = ImGui::GetIO(); (void)io;
@@ -158,21 +164,8 @@ int main()
 				ImGui::Begin("ControlWindow");
 				ImGui::ColorEdit3("clear color", (float*)&backgroundColor);
 				ImGui::Text("X %.3f, Y %0.3f", context->rotateX, context->rotateY);
-				ImGui::Text("X %.3f, Y %0.3f", 0, 0);
-				ImGui::SliderFloat("zoffset", &context->zOffset, -50.0f, 50.0f, "zOffset = %.3f");
-				ImGui::SliderFloat("lat_shift", &context->latShift, -1000.0f, 1000.0f, "latShift = %.3f");
-				ImGui::SliderFloat("vert_shift", &context->vertShift, -1000.0f, 1000.0f, "vertShift = %.3f");
 				ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 				ImGui::Separator();
-				ImGui::Separator();
-				ImGui::InputText("Screenshot name", context->screenShotName, 255);
-				ImGui::InputText("Scale percent", context->screenShotScalePercent, 4);
-				ImGui::Checkbox("Save to size", &context->screenshotSaveToSize); ImGui::SameLine();
-				ImGui::PushItemWidth(40);
-				ImGui::InputText("W", context->saveWidth, 4); ImGui::SameLine();
-				ImGui::InputText("H", context->saveHeight, 4); ImGui::SameLine();
-				if (ImGui::Button("Save"))
-					saveFrameColorClicked++;
 				ImGui::Separator();
 				ImGui::PushItemWidth(ImGui::GetWindowWidth());
 				ImGui::Checkbox("Use perspective", &context->usePerspectiveProjection);
@@ -251,6 +244,11 @@ int main()
 		//planeXY.UpdateModel(view_matrix);
 		//planeXY.SetProjection(projection_matrix);
 		//planeXY.Draw();
+
+		glUseProgram(routePreview.GetProgramId());
+		routePreview.UpdateModel(view_matrix);
+		routePreview.SetProjection(projection_matrix);
+		routePreview.Draw();
 
 		glfwSwapBuffers(window.GetHandler());
 

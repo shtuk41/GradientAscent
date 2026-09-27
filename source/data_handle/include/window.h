@@ -53,7 +53,7 @@ public:
         //glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
         //create a GLFW window object
 
-        g_window = glfwCreateWindow(width,height, "CameraMapLab", NULL, NULL);
+        g_window = glfwCreateWindow(width,height, "GradientAscend", NULL, NULL);
         
         if (!g_window)
         {

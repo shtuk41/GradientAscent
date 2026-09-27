@@ -1,7 +1,8 @@
 
-file(GLOB_RECURSE MY_SHADERS "${CMAKE_SOURCE_DIR}/shaders/*.vert" "${CMAKE_SOURCE_DIR}/shaders/*.frag")
+file(GLOB_RECURSE MY_SHADERS "${CMAKE_SOURCE_DIR}/source/data_handle/shaders/*.vert" "${CMAKE_SOURCE_DIR}/source/data_handle/shaders/*.frag")
 
-# message(STATUS "The value of MY_VARIABLE is: ${CMAKE_SOURCE_DIR}")
+#message(STATUS "The value of MY_VARIABLE is: ${CMAKE_SOURCE_DIR}")
+#message(STATUS "The value of MY_SHADERS is: ${MY_SHADERS}")
 
 
 set(IMGUI_SOURCES 
@@ -29,11 +30,13 @@ set (MY_SOURCES
 	"${CMAKE_SOURCE_DIR}/source/data_handle/sources/render_object.cpp"
 	"${CMAKE_SOURCE_DIR}/source/data_handle/sources/shaders.cpp"
 	"${CMAKE_SOURCE_DIR}/source/data_handle/sources/volume.cpp"
+	"${CMAKE_SOURCE_DIR}/source/data_handle/sources/routePreview.cpp"
 )
 
 set(MY_HEADERS
     "${CMAKE_SOURCE_DIR}/source/data_handle/include/axes3d.h"
     "${CMAKE_SOURCE_DIR}/source/data_handle/include/axisPlane.h"
+	"${CMAKE_SOURCE_DIR}/source/data_handle/include/routePreview.h"
 	"${CMAKE_SOURCE_DIR}/source/data_handle/include/camera.h"
 	"${CMAKE_SOURCE_DIR}/source/data_handle/include/context.h"
 	"${CMAKE_SOURCE_DIR}/source/data_handle/include/controls.h"
@@ -56,6 +59,7 @@ source_group("Shaders" FILES ${MY_SHADERS})
 add_executable(GradientAscent 
 	main.cpp
 	${MY_SOURCES} 
+	${MY_SHADERS}
 )
 
 target_sources(GradientAscent PRIVATE 

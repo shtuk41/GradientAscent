@@ -111,11 +111,11 @@ public:
 		double dfPixel, dfLine;
 		GDALApplyGeoTransform(adfInvGeoTransform, lon, lat, &dfPixel, &dfLine);
 
-		column = static_cast<int>(dfPixel);
-		row = static_cast<int>(dfLine);
+		column = static_cast<int>(dfLine);
+		row = static_cast<int>(dfPixel);
 
-		if (column < 0 || column >= poDataset->GetRasterXSize() ||
-			row < 0 || row >= poDataset->GetRasterYSize())
+		if (column < 0 || column >= poDataset->GetRasterYSize() ||
+			row < 0 || row >= poDataset->GetRasterXSize())
 		{
 			std::cout << std::format("The coordinate lat: {}, lon {} falls outside of this TIFF's boundaries!\n", lat, lon);
 			return GEO_DATA_ERROR::GEO_DATA_OUT_OF_BOUNDS;

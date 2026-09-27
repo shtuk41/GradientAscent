@@ -36,7 +36,7 @@ struct Context
 
 	//projection settings
 	float perspectiveFovyRadians = std::numbers::pi_v<float> / 2;
-	bool usePerspectiveProjection = false;
+	bool usePerspectiveProjection = true;
 	char orthoLeft[5];
 	char orthoRight[5];
 	char orthoBottom[5];

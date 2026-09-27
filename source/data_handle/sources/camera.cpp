@@ -72,8 +72,8 @@ void Camera::computeViewProjectionMatrices(bool moveback, bool moveforward)
 	else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS || moveforward)
 	{
 		g_initial_fov += 0.1f * delta_time * speed;
-		if (g_initial_fov > 0.800f)
-			g_initial_fov = 0.800f;
+		if (g_initial_fov > 1.50f)
+			g_initial_fov = 1.500f;
 	}
 
 	g_projection_matrix = glm::perspective(g_initial_fov, (float)width / (float)height, 0.1f, 10000.0f);
