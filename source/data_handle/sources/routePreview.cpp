@@ -1,12 +1,13 @@
 #include <shaders.h>
 #include <routePreview.h>
+#include <utilities.h>
 
 #define GLM_ENABLE_EXPERIMENTAL
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-RoutePreview::RoutePreview(std::vector<std::tuple<int, int, float>>& rt) : routeData(rt)
+RoutePreview::RoutePreview(std::vector<std::tuple<int, int, float, float>>& rt) : routeData(rt)
 {
 }
 
@@ -44,6 +45,7 @@ void RoutePreview::Setup()
         offsetY = sumY / routeData.size();
     }
 
+    float maxGradient = getMaxRouteGradient(routeData) * 0.75f;
 
     location.reserve(routeData.size() * 18);
     color.reserve(routeData.size() * 24);
@@ -54,8 +56,6 @@ void RoutePreview::Setup()
 
     float prevReal = 0.0f;
 
-    std::vector<GLfloat> green = {0.0f, 1.0f, 0.0f, 1.0};
-   
     for (auto it = routeData.begin() + 1; it != routeData.end(); ++it)
     {
         auto t2 = *it;
@@ -64,13 +64,17 @@ void RoutePreview::Setup()
         location.push_back(std::get<1>(t1) - offsetY);
         location.push_back(0);
 
-        color.insert(color.end(), green.begin(), green.end());
+        RGBA t1color = gradientToColor(std::get<3>(t1), maxGradient);
+
+        color.insert(color.end(), { t1color.r, t1color.g, t1color.b, t1color.a });
 
         location.push_back(std::get<0>(t2) - offsetX);
         location.push_back(std::get<1>(t2) - offsetY);
         location.push_back(0);
 
-        color.insert(color.end(), green.begin(), green.end());
+        RGBA t2color = gradientToColor(std::get<3>(t2), maxGradient);
+
+        color.insert(color.end(), { t2color.r, t2color.g, t2color.b, t2color.a });
 
         location.push_back(std::get<0>(t1) - offsetX);
         location.push_back(std::get<1>(t1) - offsetY);
@@ -84,19 +88,19 @@ void RoutePreview::Setup()
 
         location.push_back(t * scale);
 
-        color.insert(color.end(), green.begin(), green.end());
+        color.insert(color.end(), { t1color.r, t1color.g, t1color.b, t1color.a });
 
         location.push_back(std::get<0>(t1) - offsetX);
         location.push_back(std::get<1>(t1) - offsetY);
         location.push_back(t * scale);
 
-        color.insert(color.end(), green.begin(), green.end());
+        color.insert(color.end(), { t1color.r, t1color.g, t1color.b, t1color.a });
 
         location.push_back(std::get<0>(t2) - offsetX);
         location.push_back(std::get<1>(t2) - offsetY);
         location.push_back(0);
 
-        color.insert(color.end(), green.begin(), green.end());
+        color.insert(color.end(), { t2color.r, t2color.g, t2color.b, t2color.a });
 
         location.push_back(std::get<0>(t2) - offsetX);
         location.push_back(std::get<1>(t2) - offsetY);
@@ -111,7 +115,7 @@ void RoutePreview::Setup()
 
         location.push_back(t * scale);
 
-        color.insert(color.end(), { 0.0f, 0.0f, 0.0f, 1.0f });
+        color.insert(color.end(), { t2color.r, t2color.g, t2color.b, t2color.a });
 
         t1 = t2;
     }

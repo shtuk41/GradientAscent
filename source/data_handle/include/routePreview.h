@@ -18,10 +18,10 @@ private:
     std::vector<GLfloat> location;
     std::vector<GLfloat> color;
 
-    std::vector<std::tuple<int, int, float>> routeData;
+    std::vector<std::tuple<int, int, float, float>> routeData;
 public:
 
-    RoutePreview(std::vector<std::tuple<int, int, float>> &routeData);
+    RoutePreview(std::vector<std::tuple<int, int, float, float>> &routeData);
     ~RoutePreview();
 
     void SetProjection(glm::mat4 p);

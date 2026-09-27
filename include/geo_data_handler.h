@@ -231,7 +231,42 @@ int ot_data_download(const std::string& filename, float minlat, float maxlat, fl
 
 	curl_global_cleanup();
 	return 0;
-
 }
 
+inline float toRadians(float degree) 
+{
+	return degree * M_PI / 180.0f;
+}
 
+GEO_DATA_ERROR computeGradient(trackpoint& first, trackpoint& second, float& gradient)
+{
+	float rise = second.elevation - first.elevation;
+
+	const float EARTH_R = 6371000.0f;
+
+	float lat1_rad = toRadians(first.lat);
+	float lat2_rad = toRadians(second.lat);
+	float dLat = toRadians(second.lat - first.lat);
+	float dLon = toRadians(second.lon - first.lon);
+
+	float a = std::sin(dLat / 2.0f) * std::sin(dLat / 2.0f) +
+				std::cos(lat1_rad) * std::cos(lat2_rad) *
+				std::sin(dLon / 2.0f) * std::sin(dLon / 2.0f);
+
+	float c = 2.0f * std::atan2(std::sqrt(a), std::sqrt(1.0f - a));
+	float run = EARTH_R * c; // horizontal distance in meters
+
+	// Handle edge case where points are in the exact same horizontal spot
+	if (run == 0.0f) 
+	{
+		gradient = 0.0f;
+		return GEO_DATA_ERROR::GEO_DATA_NO_ERROR;
+	}
+
+	// 3. Compute Gradient variations
+	float gradientDecimal = rise / run;
+	gradient = gradientDecimal * 100.0f;
+	float angleDegrees = std::atan(gradientDecimal) * 180.0f / M_PI;
+
+	return GEO_DATA_ERROR::GEO_DATA_NO_ERROR;
+}

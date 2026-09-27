@@ -49,6 +49,7 @@ set(MY_HEADERS
 	"${CMAKE_SOURCE_DIR}/include/common_defs.h" 
 	"${CMAKE_SOURCE_DIR}/include/activity_stream.h" 
     "${CMAKE_SOURCE_DIR}/include/geo_data_handler.h"
+	"${CMAKE_SOURCE_DIR}/include/utilities.h"
 )
 
 source_group("Source Files\\imgui" FILES ${IMGUI_SOURCES})

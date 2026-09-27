@@ -24,6 +24,7 @@
 #include <window.h>
 #include <activity_stream.h>
 #include <geo_data_handler.h>
+#include <utilities.h>
 
 std::unique_ptr<Context> context;
 
@@ -38,7 +39,7 @@ int main()
 
 	fs::path testgpxpath(R"(D:\Files\GradientAscent\data\Afternoon_Ride.gpx)");
 
-	std::vector<std::tuple<int, int, float>> routeData;
+	std::vector<std::tuple<int, int, float, float>> routeData;
 
 	try
 	{
@@ -56,6 +57,8 @@ int main()
 		std::cout << std::format("number of points: {}\n", trackpoints.size());
 
 		routeData.reserve(trackpoints.size());
+
+		trackpoint tp = trackpoints.front();
 
 		for (auto& t : trackpoints)
 		{
@@ -78,13 +81,19 @@ int main()
 
 				if (pixelError == GEO_DATA_ERROR::GEO_DATA_NO_ERROR)
 				{
-					routeData.push_back({ row, col, t.elevation });
+					float gradient;
+					computeGradient(tp, t, gradient);
+					routeData.push_back({ row, col, t.elevation, gradient});
 				}
 			}
 			else
 			{
 				std::cout << std::format("{}tiff elevation is nan{}\n", RED, RESET);
 			}
+
+			
+
+			tp = t;
 		}
 
 		std::cout << std::format("Saved points: {} vs reserved {}\n", routeData.size(), routeData.capacity());
@@ -94,6 +103,9 @@ int main()
 		std::cout << std::format("Global exception: {}", e.what());
 		return 0;
 	}
+
+	float minimumGraident = getMinRouteGradient(routeData);
+	float maximumGradient = getMaxRouteGradient(routeData);
 
 	glfwSetErrorCallback(glfw_error_callback);
 
@@ -143,7 +155,7 @@ int main()
 	ImGui_ImplGlfw_InitForOpenGL(window.GetHandler(), true);
 	ImGui_ImplOpenGL3_Init(glsl_version);
 
-	auto backgroundColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+	auto backgroundColor = ImVec4(23.0f/255.0f, 20.0f/255.0f, 20.0f/255.0f, 1.0f);
 
 	glDisable(GL_DEPTH_TEST);
 
@@ -180,6 +192,9 @@ int main()
 				ImGui::InputText("N", context->orthoNear, 5); ImGui::SameLine();
 				ImGui::InputText("F", context->orthoFar, 5);
 				ImGui::PushItemWidth(ImGui::GetWindowWidth());
+				ImGui::Separator();
+				ImGui::Separator();
+				ImGui::Text("Minimum and maximum gradients %0.3f / %0.3f", minimumGraident, maximumGradient);
 				ImGui::Separator();
 				ImGui::Separator();
 				ImGui::End();
