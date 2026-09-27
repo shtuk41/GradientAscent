@@ -1,10 +1,12 @@
-# GradientAscent Simulator
+# GeoRide Simulator
 
 A simulator for riding real-world geospatial terrain on a smart bike trainer.. 
 
 <!--This platform maps real-world GPS tracks (such as Strava routes) directly onto underlying Digital Elevation Models (DEMs) to dynamically simulate real-world topography.-->
 
 ![First TIFF Render](README/firsttiffrender.png)
+
+![First reoute preview in 3d Render](README/routepreview3d.png)
 
 <!--## Features
 
