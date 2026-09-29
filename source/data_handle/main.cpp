@@ -148,8 +148,6 @@ int main()
 	RoutePreview routePreview(routeData);
 	routePreview.Setup();
 
-
-
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO const& io = ImGui::GetIO(); (void)io;
@@ -170,42 +168,28 @@ int main()
 		glFrontFace(GL_CW);
 		glfwPollEvents();
 
-		if (context->view == View::Global && saveFrameColorClicked == 0)
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+
 		{
-			ImGui_ImplOpenGL3_NewFrame();
-			ImGui_ImplGlfw_NewFrame();
-			ImGui::NewFrame();
-
-			{
-				ImGui::Begin("ControlWindow");
-				ImGui::ColorEdit3("clear color", (float*)&backgroundColor);
-				ImGui::Text("X %.3f, Y %0.3f", context->rotateX, context->rotateY);
-				ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-				ImGui::Separator();
-				ImGui::Separator();
-				ImGui::PushItemWidth(ImGui::GetWindowWidth());
-				ImGui::Checkbox("Use perspective", &context->usePerspectiveProjection);
-				ImGui::Text("Perspective");
-				ImGui::SliderFloat("slider float", &context->perspectiveFovyRadians, 0.1f, 3.0f, "perspective angle = %.3f");
-				ImGui::Text("Orthographic");
-				ImGui::PushItemWidth(40);
-				ImGui::InputText("L", context->orthoLeft, 6); ImGui::SameLine();
-				ImGui::InputText("R", context->orthoRight, 6); ImGui::SameLine();
-				ImGui::InputText("B", context->orthoBottom, 6); ImGui::SameLine();
-				ImGui::InputText("T", context->orthoTop, 6); ImGui::SameLine();
-				ImGui::InputText("N", context->orthoNear, 6); ImGui::SameLine();
-				ImGui::InputText("F", context->orthoFar, 6);
-				ImGui::PushItemWidth(ImGui::GetWindowWidth());
-				ImGui::Separator();
-				ImGui::Separator();
-				ImGui::Text("Minimum and maximum gradients %0.3f / %0.3f", minimumGraident, maximumGradient);
-				ImGui::Separator();
-				ImGui::Separator();
-				ImGui::End();
-			}
-
-			ImGui::Render();
+			ImGui::Begin("ControlWindow");
+			ImGui::ColorEdit3("clear color", (float*)&backgroundColor);
+			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+			ImGui::Separator();
+			ImGui::Separator();
+			ImGui::PushItemWidth(ImGui::GetWindowWidth());
+			ImGui::PushItemWidth(40);
+			ImGui::PushItemWidth(ImGui::GetWindowWidth());
+			ImGui::Separator();
+			ImGui::Separator();
+			ImGui::Text("Minimum and maximum gradients %0.3f / %0.3f", minimumGraident, maximumGradient);
+			ImGui::Separator();
+			ImGui::Separator();
+			ImGui::End();
 		}
+
+		ImGui::Render();
 
 		int display_w, display_h;
 		glfwGetFramebufferSize(window.GetHandler(), &display_w, &display_h);
@@ -213,31 +197,35 @@ int main()
 		glClearColor(backgroundColor.x * backgroundColor.w, backgroundColor.y * backgroundColor.w, backgroundColor.z * backgroundColor.w, backgroundColor.w);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		if (context->view == View::Global && saveFrameColorClicked == 0)
-		{
-			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-		}
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 		if (!ImGui::GetIO().WantCaptureMouse)
 		{
-			cameraGlobal.rotateX(context->rotateX);
-			cameraGlobal.rotateY(context->rotateY);
 			cameraGlobal.setOffsetX(context->latShift);
 			cameraGlobal.setOffsetY(context->vertShift);
 
-			if (context->usePerspectiveProjection)
+			if (Controls::moveback || Controls::key_w)
 			{
-				cameraGlobal.computeViewProjectionMatrices(Controls::moveback, Controls::moveforward);
+				context->orthoLeft += 10;
+				context->orthoRight -= 10;
+				context->orthoBottom += 10;
+				context->orthoTop -= 10;
 			}
-			else
+			else if (Controls::moveforward || Controls::key_s)
 			{
-				cameraGlobal.computeViewProjectionMatrices(context->GetOrthoLeft(),
-					context->GetOrthoRight(),
-					context->GetOrthoBottom(),
-					context->GetOrthoTop(),
-					context->GetOrthoNear(),
-					context->GetOrthoFar());
+				context->orthoLeft -= 10;
+				context->orthoRight += 10;
+				context->orthoBottom -= 10;
+				context->orthoTop += 10;
 			}
+
+			cameraGlobal.computeViewProjectionMatrices(context->GetOrthoLeft(),
+				context->GetOrthoRight(),
+				context->GetOrthoBottom(),
+				context->GetOrthoTop(),
+				context->GetOrthoNear(),
+				context->GetOrthoFar(),
+				context->orientation);
 		}
 
 		glm::mat4 projection_matrix;
@@ -248,6 +236,8 @@ int main()
 
 		Controls::moveback = false;
 		Controls::moveforward = false;
+		Controls::key_w = false;
+		Controls::key_s = false;
 
 		glUseProgram(axes3d.GetProgramId());
 		axes3d.UpdateModel(view_matrix);
@@ -270,9 +260,6 @@ int main()
 		routePreview.Draw();
 
 		glfwSwapBuffers(window.GetHandler());
-
-		context->rotateY = 0.0f;
-		context->rotateX = 0.0f;
 	}
 
 	ImGui_ImplOpenGL3_Shutdown();

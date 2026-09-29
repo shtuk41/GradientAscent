@@ -1,5 +1,11 @@
 #pragma once
 
+#define GLM_ENABLE_EXPERIMENTAL
+
+#include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
+
 #include <GLFW/glfw3.h>
 #include <memory>
 #include <context.h>
@@ -14,20 +20,33 @@ public:
 	static bool rotateEnable;
 	static bool moveback;
 	static bool moveforward;
+	static bool key_w;
+	static bool key_s;
 
 	static void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 	{
 		if (rotateEnable)
 		{
 			double delta_x = xpos - previous_xpos;
-
-			float ry = (float)(0.005f * delta_x);
-			context->rotateY += ry;
-
 			double delta_y = ypos - previous_ypos;
 
-			float rx = (float)(0.005f * delta_y);
-			context->rotateX += rx;
+			float sensitivity = 0.005f;
+
+			float angleX = (float)(delta_y * sensitivity); // Pitch
+			float angleY = (float)(delta_x * sensitivity); // Yaw
+
+			// 1. Extract BOTH local axes from the current orientation matrix
+			glm::mat4 rotMat = glm::mat4_cast(context->orientation);
+			glm::vec3 localRight = glm::vec3(rotMat[0]); // Local X axis
+			glm::vec3 localUp = glm::vec3(rotMat[1]); // Local Y axis (the "new Y")
+
+			// 2. Create incremental rotations around the camera's actual local axes
+			glm::quat pitchRot = glm::angleAxis(angleX, localRight);
+			glm::quat yawRot = glm::angleAxis(angleY, localUp);
+
+			// 3. Apply local rotations 
+			context->orientation = yawRot * pitchRot * context->orientation;
+			context->orientation = glm::normalize(context->orientation);
 
 			previous_xpos = xpos;
 			previous_ypos = ypos;
@@ -38,25 +57,12 @@ public:
 	{
 		if (button == GLFW_MOUSE_BUTTON_LEFT)
 		{
-			if (context->view == View::Global)
+			if (action == GLFW_PRESS)
 			{
-				if (action == GLFW_PRESS)
-				{
-					double xpos, ypos;
-
-					glfwGetCursorPos(window, &xpos, &ypos);
-
-					previous_xpos = xpos;
-					previous_ypos = ypos;
-
-					rotateEnable = true;
-				}
-				else if (action == GLFW_RELEASE)
-				{
-					rotateEnable = false;
-				}
+				glfwGetCursorPos(window, &previous_xpos, &previous_ypos);
+				rotateEnable = true;
 			}
-			else
+			else if (action == GLFW_RELEASE)
 			{
 				rotateEnable = false;
 			}
@@ -88,28 +94,12 @@ public:
 			glfwSetWindowShouldClose(window, GL_TRUE);
 			break;
 		case GLFW_KEY_SPACE:
-			context->rotateX = 0;
-			context->rotateY = 0;
 			break;
 		case GLFW_KEY_A:
-			if (context->view == View::Sensor)
-			{
-			}
 			break;
 		case GLFW_KEY_D:
-			if (context->view == View::Sensor)
-			{
-			}
 			break;
 		case GLFW_KEY_C:
-			if (context->view == View::Global)
-			{
-				context->view = View::Sensor;
-			}
-			else
-			{
-				context->view = View::Global;
-			}
 			break;
 		case GLFW_KEY_O:
 			context->saveAllScreenshotsBW(10.0f);
@@ -123,54 +113,26 @@ public:
 			context->SaveImage();
 			break;
 		case GLFW_KEY_S:
-			if (context->view == View::Sensor)
-			{
-			}
+			key_s = true;
 			break;
 		case GLFW_KEY_W:
-			if (context->view == View::Sensor)
-			{
-			}
+			key_w = true;
 			break;
 		case GLFW_KEY_UP:
-			if (context->view == View::Sensor)
-			{
-			}
 			break;
 		case GLFW_KEY_DOWN:
-			if (context->view == View::Sensor)
-			{
-			}
 			break;
 		case GLFW_KEY_LEFT:
-			if (context->view == View::Sensor)
-			{
-			}
 			break;
 		case GLFW_KEY_RIGHT:
-			if (context->view == View::Sensor)
-			{
-			}
 			break;
 		case GLFW_KEY_COMMA:
-			if (context->view == View::Sensor)
-			{
-			}
 			break;
 		case GLFW_KEY_PERIOD:
-			if (context->view == View::Sensor)
-			{
-			}
 			break;
 		case GLFW_KEY_PAGE_UP:
-			if (context->view == View::Global)
-			{
-			}
 			break;
 		case GLFW_KEY_PAGE_DOWN:
-			if (context->view == View::Global)
-			{
-			}
 			break;
 		}
 	}
@@ -181,6 +143,8 @@ double Controls::previous_xpos = 0.0f;
 double Controls::previous_ypos = 0.0f;
 bool Controls::moveback = false;
 bool Controls::moveforward = false;
+bool Controls::key_w = false;
+bool Controls::key_s = false;
 
 
 

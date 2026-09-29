@@ -11,10 +11,9 @@
 
 struct Context
 {
-	//infrmation
-	float rotateY;
-	float rotateX;
-	View view;
+
+	//mouse rotation
+	glm::quat orientation;
 
 	std::unique_ptr<Camera> cameraSensor;
 	float zOffset = 0.0f;
@@ -35,14 +34,12 @@ struct Context
 	char overlayViewPercent[4];
 
 	//projection settings
-	float perspectiveFovyRadians = std::numbers::pi_v<float> / 2;
-	bool usePerspectiveProjection = false;
-	char orthoLeft[7];
-	char orthoRight[7];
-	char orthoBottom[7];
-	char orthoTop[7];
-	char orthoNear[7];
-	char orthoFar[7];
+	float orthoLeft;
+	float orthoRight;
+	float orthoBottom;
+	float orthoTop;
+	float orthoNear;
+	float orthoFar;
 
 	Context(GLFWwindow* window);
 	void SaveImage();
@@ -52,8 +49,6 @@ struct Context
 	void saveAllScreenshotsBW(float percent_scale);
 	float GetScreenshotScalePercent();
 	void SetScreenshotScalePercent(const std::string &percent);
-	void SetUsePerspectiveProjection(const std::string& use_perspective_projection);
-	void SetPerspetiveAngle(const std::string& perspective_angle);
 	void SetOutputDirectoryPath(const std::string& output_directory_path);
 	float GetOverlayViewPercent();
 	void SetOverlayViewPercent(const std::string& overlay_view_percent);

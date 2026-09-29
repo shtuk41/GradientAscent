@@ -13,19 +13,20 @@
 #include <context.h>
 #include <optionsreader.h>
 
-Context::Context(GLFWwindow* window) : rotateX(0.0f), rotateY(0.0f), view(View::Global), startSavingAll(false)
+Context::Context(GLFWwindow* window) : startSavingAll(false)
 {
+	orientation = { 1.0f, 0.0f, 0.0f, 0.0f };
 	cameraSensor = std::make_unique<Camera>(window);
 	std::strncpy(screenShotName, "notdefinedfilename.png",sizeof(screenShotName)-1);
 	std::strncpy(screenShotScalePercent, "0", sizeof(screenShotScalePercent)-1);
 	std::strncpy(saveWidth, "7920",sizeof(saveWidth)-1);
 	std::strncpy(saveHeight, "6004",sizeof(saveHeight)-1);
-	std::strncpy(orthoLeft, "-1000",sizeof(orthoLeft)-1);
-	std::strncpy(orthoRight, "1000",sizeof(orthoRight)-1);
-	std::strncpy(orthoBottom, "-1000",sizeof(orthoBottom)-1);
-	std::strncpy(orthoTop, "1000",sizeof(orthoTop)-1);
-	std::strncpy(orthoNear, "1",sizeof(orthoNear)-1);
-	std::strncpy(orthoFar, "20000",sizeof(orthoFar)-1);
+	orthoLeft = -1000;
+	orthoRight = 1000;
+	orthoBottom = -1000;
+	orthoTop = 1000;
+	orthoNear = -10000;
+	orthoFar = 20000;
 }
 
 float Context::GetScreenshotScalePercent()
@@ -62,21 +63,6 @@ void Context::SetOverlayViewPercent(const std::string& ovp)
 	size_t nc = ovp.length() > 3 ? 3 : ovp.length();
 
 	ovp.copy(overlayViewPercent, nc);
-}
-
-void Context::SetUsePerspectiveProjection(const std::string& use_perspetive_projection)
-{
-	usePerspectiveProjection = use_perspetive_projection.compare("true") == 0;
-}
-
-void Context::SetPerspetiveAngle(const std::string& perspetive_angle)
-{
-	std::stringstream iss(perspetive_angle);
-	float angle;
-	iss >> angle;
-	bool valid = iss.eof() && !iss.fail() && angle > 0 && angle <= std::numbers::pi_v<float>;
-
-	perspectiveFovyRadians = valid ? static_cast<float>(angle) : std::numbers::pi_v<float> / 2;
 }
 
 void Context::SetOutputDirectoryPath(const std::string& output_directory_path)
@@ -162,62 +148,32 @@ void Context::saveAllScreenshotsBW(float percent_scale)
 
 float Context::GetOrthoLeft()
 {
-	std::stringstream iss(orthoLeft);
-	int orthoLeftInteger;
-	iss >> orthoLeftInteger;
-	bool valid = iss.eof() && !iss.fail() && orthoLeftInteger >= -5000 && orthoLeftInteger <= 5000;
-
-	return valid ? static_cast<float>(orthoLeftInteger) : -5000.0f;
+	return orthoLeft;
 }
 
 float Context::GetOrthoRight()
 {
-	std::stringstream iss(orthoRight);
-	int orthoRightInteger;
-	iss >> orthoRightInteger;
-	bool valid = iss.eof() && !iss.fail() && orthoRightInteger >= -5000 && orthoRightInteger <= 5000;
-
-	return valid ? static_cast<float>(orthoRightInteger) : 5000.0f;
+	return orthoRight;
 }
 
 float Context::GetOrthoBottom()
 {
-	std::stringstream iss(orthoBottom);
-	int orthoBottomInteger;
-	iss >> orthoBottomInteger;
-	bool valid = iss.eof() && !iss.fail() && orthoBottomInteger >= -5000 && orthoBottomInteger <= 5000;
-
-	return valid ? static_cast<float>(orthoBottomInteger) : -5000.0f;
+	return orthoBottom;
 }
 
 float Context::GetOrthoTop()
 {
-	std::stringstream iss(orthoTop);
-	int orthoTopInteger;
-	iss >> orthoTopInteger;
-	bool valid = iss.eof() && !iss.fail() && orthoTopInteger >= -5000 && orthoTopInteger <= 5000;
-
-	return valid ? static_cast<float>(orthoTopInteger) : 5000.0f;
+	return orthoTop;
 }
 
 float Context::GetOrthoNear()
 {
-	std::stringstream iss(orthoNear);
-	int orthoNearInteger;
-	iss >> orthoNearInteger;
-	bool valid = iss.eof() && !iss.fail() && orthoNearInteger >= -10000 && orthoNearInteger <= 10000;
-
-	return valid ? static_cast<float>(orthoNearInteger) : 1.0f;
+	return orthoNear;
 }
 
 float Context::GetOrthoFar()
 {
-	std::stringstream iss(orthoFar);
-	int orthoFarInteger;
-	iss >> orthoFarInteger;
-	bool valid = iss.eof() && !iss.fail() && orthoFarInteger >=-25000  && orthoFarInteger <= 25000;
-
-	return valid ? static_cast<float>(orthoFarInteger) : 9999.0f;
+	return orthoFar;
 }
 
 
