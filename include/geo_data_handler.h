@@ -12,7 +12,8 @@
 enum class GEO_DATA_ERROR
 {
 	GEO_DATA_NO_ERROR = 0,
-	GEO_DATA_OUT_OF_BOUNDS = -1
+	GEO_DATA_OUT_OF_BOUNDS = -1,
+	GEO_DATA_INVALID_VALUE = -2
 };
 
 struct geo_point
@@ -98,10 +99,34 @@ public:
 
 		GDALRasterBand* poBand = poDataset->GetRasterBand(1);
 
-		float elevationValue = invalid_value;
-		
+		float elevationValue = std::numeric_limits<float>::quiet_NaN();
 
 		poBand->RasterIO(GF_Read, nPixel, nLine, 1, 1, &elevationValue, 1, 1, GDT_Float32, 0, 0);
+		
+		int hasNoData = 0;
+		double metaNoData = poBand->GetNoDataValue(&hasNoData);
+
+		bool isInvalid = false;
+
+		// 1. Check metadata-defined NoData value (if present)
+		if (hasNoData && std::abs(elevationValue - static_cast<float>(metaNoData)) < 1e-5f) 
+		{
+			isInvalid = true;
+		}
+		// 2. Check common de facto void markers found in the wild
+		else if (elevationValue == 9999.0f || elevationValue == -9999.0f || std::isnan(elevationValue)) 
+		{
+			isInvalid = true;
+		}
+
+		if (isInvalid) 
+		{
+			return GEO_DATA_ERROR::GEO_DATA_INVALID_VALUE;
+		}
+		else 
+		{
+			elevation = elevationValue;
+		}
 
 		return GEO_DATA_ERROR::GEO_DATA_NO_ERROR;
 	}

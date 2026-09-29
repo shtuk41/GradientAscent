@@ -61,9 +61,13 @@ int main()
 
 		trackpoint tp = trackpoints.front();
 
+		float lastvalidElevation = std::numeric_limits<float>::quiet_NaN();;
+		//int line = 0;
+		//std::ofstream elevationFile("elevation.csv", std::ios::trunc);
+
 		for (auto& t : trackpoints)
 		{
-			std::cout << std::format("Lat {}, Lon {}, Elevation {} at time {}\n", t.lat, t.lon, t.elevation, t.time);
+			//std::cout << std::format("Lat {}, Lon {}, Elevation {} at time {}\n", t.lat, t.lon, t.elevation, t.time);
 
 			float elevation;
 				
@@ -71,28 +75,36 @@ int main()
 
 			if (error == GEO_DATA_ERROR::GEO_DATA_NO_ERROR)
 			{
-				float difference = t.elevation - elevation;
-
-				std::cout << std::format("{}tiff elevation {}, difference is {} {}\n", GREEN, elevation, difference, RESET);
-				tiffHandler.putTreckPoint(t.lat, t.lon);
-
-				int row, col;
-
-				GEO_DATA_ERROR pixelError = tiffHandler.getPixelCoordinate(t.lat, t.lon, row, col);
-
-				if (pixelError == GEO_DATA_ERROR::GEO_DATA_NO_ERROR)
-				{
-					float gradient;
-					computeGradient(tp, t, gradient);
-					routeData.push_back({ row, col, t.elevation, gradient});
-				}
+				lastvalidElevation = elevation;
+			}
+			else if (std::isnan(lastvalidElevation))
+			{
+				continue;
 			}
 			else
 			{
-				std::cout << std::format("{}tiff elevation is nan{}\n", RED, RESET);
+				elevation = lastvalidElevation;
 			}
 
-			
+			//std::string writeLine =  std::format("{},{},\n", line, elevation);
+			//elevationFile.write(writeLine.c_str(), writeLine.length());
+			//line += 1;
+
+			float difference = t.elevation - elevation;
+
+			//std::cout << std::format("{}tiff elevation {}, difference is {} {}\n", GREEN, elevation, difference, RESET);
+			tiffHandler.putTreckPoint(t.lat, t.lon);
+
+			int row, col;
+
+			GEO_DATA_ERROR pixelError = tiffHandler.getPixelCoordinate(t.lat, t.lon, row, col);
+
+			if (pixelError == GEO_DATA_ERROR::GEO_DATA_NO_ERROR)
+			{
+				float gradient;
+				computeGradient(tp, t, gradient);
+				routeData.push_back({ row, col, elevation, gradient });
+			}
 
 			tp = t;
 		}
