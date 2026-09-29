@@ -38,7 +38,8 @@ int main()
 	GDALAllRegister();
 
 	//fs::path testgpxpath(R"(D:\Files\GradientAscent\data\Afternoon_Ride.gpx)");
-	fs::path testgpxpath(R"(D:\Files\GradientAscent\data\Afternoon_Ride_09272026.gpx)");
+	fs::path testgpxpath(R"(D:\Files\GradientAscent\data\Lunch_Ride.gpx)");
+	//fs::path testgpxpath(R"(D:\Files\GradientAscent\data\Afternoon_Ride_09272026.gpx)");
 
 	std::vector<std::tuple<int, int, float, float>> routeData;
 
@@ -116,6 +117,8 @@ int main()
 		std::cout << std::format("Global exception: {}", e.what());
 		return 0;
 	}
+
+	smoothGradient(routeData, 21);
 
 	float minimumGraident = getMinRouteGradient(routeData);
 	float maximumGradient = getMaxRouteGradient(routeData);

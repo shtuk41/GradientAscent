@@ -113,3 +113,36 @@ inline float getMeanRouteGradient(const std::vector<std::tuple<int, int, float, 
 
 	return mean;
 }
+
+inline void smoothGradient(std::vector<std::tuple<int, int, float, float>>& rt, size_t windowSize = 21)
+{
+	if (rt.empty()) return;
+
+	size_t n = rt.size();
+	std::vector<float> values(n);
+	for (size_t i = 0; i < n; ++i) {
+		values[i] = std::get<3>(rt[i]);
+	}
+
+	float sum = 0.0f;
+
+	for (size_t ii = 0; ii < n; ++ii)
+	{
+		sum += values[ii];
+
+		if (ii >= windowSize)
+		{
+			sum -= values[ii - windowSize];
+		}
+
+		if (ii < windowSize - 1)
+		{
+			std::get<3>(rt[ii]) = 0.0f;
+		}
+		else
+		{
+			float average = sum / static_cast<float>(windowSize);
+			std::get<3>(rt[ii]) = average;
+		}
+	}
+}
