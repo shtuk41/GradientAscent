@@ -7,7 +7,14 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-RoutePreview::RoutePreview(std::vector<std::tuple<int, int, float, float>>& rt) : routeData(rt)
+struct RoadVertex
+{
+    glm::vec3 left;
+    glm::vec3 right;
+    RGBA color;
+};
+
+RoutePreview::RoutePreview(std::vector<std::tuple<int, int, float, float, float>>& rt) : routeData(rt)
 {
 }
 
@@ -21,14 +28,16 @@ RoutePreview::~RoutePreview()
 
 void RoutePreview::Setup()
 {
+
 #ifdef _WIN32	
-    program_id = LoadShaders(".\\shaders\\axisPlane.vert", ".\\shaders\\axisPlane.frag");
+    program_id = LoadShaders(".\\shaders\\axisPlane.vert", ".\\shaders\\axisPlane.frag"); 
 #elif defined (__linux__)
-	program_id = LoadShaders("./shaders/axisPlane.vert", "./shaders/axisPlane.frag");
+     program_id = LoadShaders("./shaders/axisPlane.vert", "./shaders/axisPlane.frag"); 
 #endif
 
     float offsetX = 0.0f;
     float offsetY = 0.0f;
+    float trackWidth = 10.0f;
 
     if (!routeData.empty())
     {
@@ -45,79 +54,100 @@ void RoutePreview::Setup()
         offsetY = sumY / routeData.size();
     }
 
-    float maxGradient = getMaxRouteGradient(routeData) * 0.75f;
-
-    location.reserve(routeData.size() * 18);
-    color.reserve(routeData.size() * 24);
-
-    auto t1 = routeData.front();
-
-    float scale = 0.5f;
-
-    float prevReal = 0.0f;
-
-    for (auto it = routeData.begin() + 1; it != routeData.end(); ++it)
+    float maxGradient = getMaxRouteGradient(routeData);
+    size_t n = routeData.size();
+    if (n < 2)
     {
-        auto t2 = *it;
+        return;
+    }
 
-        location.push_back(std::get<0>(t1) - offsetX);
-        location.push_back(std::get<1>(t1) - offsetY);
-        location.push_back(0);
+    float halfWidth = trackWidth / 2.0f;
 
-        RGBA t1color = gradientToColor(std::get<3>(t1), maxGradient);
+    auto safeNormalize = [](const glm::vec2& v) 
+                            {
+                                float len = glm::length(v);
+                                if (len < 1e-5f) 
+                                {
+                                    return glm::vec2(1.0f, 0.0f);
+                                }
+                                    return v / len;
+                            };
 
-        color.insert(color.end(), { t1color.r, t1color.g, t1color.b, t1color.a });
+    auto getPerpendicular = [&](size_t idx1, size_t idx2) 
+                        {
+                            const auto& p1 = routeData[idx1];
+                            const auto& p2 = routeData[idx2];
+                            glm::vec2 diff(static_cast<float>(std::get<0>(p2) - std::get<0>(p1)),
+                                            static_cast<float>(std::get<1>(p2) - std::get<1>(p1)));
+                            glm::vec2 dir = safeNormalize(diff);
+                            return glm::vec2(-dir.y, dir.x);
+                        };
 
-        location.push_back(std::get<0>(t2) - offsetX);
-        location.push_back(std::get<1>(t2) - offsetY);
-        location.push_back(0);
+    std::vector<RoadVertex> roadVertices;
+    roadVertices.reserve(n);
 
-        RGBA t2color = gradientToColor(std::get<3>(t2), maxGradient);
-
-        color.insert(color.end(), { t2color.r, t2color.g, t2color.b, t2color.a });
-
-        location.push_back(std::get<0>(t1) - offsetX);
-        location.push_back(std::get<1>(t1) - offsetY);
-
-        float t = std::get<2>(t1);
-        
-        if (t < 0)
-            t = prevReal;
+    for (size_t i = 0; i < n; ++i)
+    {
+        glm::vec2 normal;
+        if (i == 0)
+        {
+            normal = getPerpendicular(0, 1);
+        }
+        else if (i == n - 1)
+        {
+            normal = getPerpendicular(n - 2, n - 1);
+        }
         else
-            prevReal = t;
+        {
+            glm::vec2 n1 = getPerpendicular(i - 1, i);
+            glm::vec2 n2 = getPerpendicular(i, i + 1);
+            normal = safeNormalize(n1 + n2);
+        }
 
-        location.push_back(t * scale);
+        const auto& pt = routeData[i];
+        float t = static_cast<float>(std::get<2>(pt));
+        glm::vec3 pos(
+            static_cast<float>(std::get<0>(pt)) - offsetX,
+            static_cast<float>(std::get<1>(pt)) - offsetY,
+            t
+        );
 
-        color.insert(color.end(), { t1color.r, t1color.g, t1color.b, t1color.a });
+        glm::vec3 left = pos + glm::vec3(normal * halfWidth, 0.0f);
+        glm::vec3 right = pos - glm::vec3(normal * halfWidth, 0.0f);
+        left.z = pos.z;
+        right.z = pos.z;
 
-        location.push_back(std::get<0>(t1) - offsetX);
-        location.push_back(std::get<1>(t1) - offsetY);
-        location.push_back(t * scale);
+        RGBA col = gradientToColor(std::get<3>(pt), maxGradient);
+        roadVertices.push_back({ left, right, col });
+    }
 
-        color.insert(color.end(), { t1color.r, t1color.g, t1color.b, t1color.a });
+    location.reserve(roadVertices.size() * 18);
+    color.reserve(roadVertices.size() * 24);
 
-        location.push_back(std::get<0>(t2) - offsetX);
-        location.push_back(std::get<1>(t2) - offsetY);
-        location.push_back(0);
+    for (size_t i = 0; i < roadVertices.size() - 1; ++i)
+    {
+        const auto& curr = roadVertices[i];
+        const auto& next = roadVertices[i + 1];
 
-        color.insert(color.end(), { t2color.r, t2color.g, t2color.b, t2color.a });
+        // Triangle 1: curr.left -> next.left -> next.right
+        location.insert(location.end(), { curr.left.x, curr.left.y, curr.left.z });
+        color.insert(color.end(), { curr.color.r, curr.color.g, curr.color.b, curr.color.a });
 
-        location.push_back(std::get<0>(t2) - offsetX);
-        location.push_back(std::get<1>(t2) - offsetY);
+        location.insert(location.end(), { next.left.x, next.left.y, next.left.z });
+        color.insert(color.end(), { next.color.r, next.color.g, next.color.b, next.color.a });
 
-        t = std::get<2>(t2);
+        location.insert(location.end(), { next.right.x, next.right.y, next.right.z });
+        color.insert(color.end(), { next.color.r, next.color.g, next.color.b, next.color.a });
 
-        if (t < 0)
-            t = prevReal;
-        else
-            prevReal = t;
+        // Triangle 2: curr.left -> next.right -> curr.right
+        location.insert(location.end(), { curr.left.x, curr.left.y, curr.left.z });
+        color.insert(color.end(), { curr.color.r, curr.color.g, curr.color.b, curr.color.a });
 
+        location.insert(location.end(), { next.right.x, next.right.y, next.right.z });
+        color.insert(color.end(), { next.color.r, next.color.g, next.color.b, next.color.a });
 
-        location.push_back(t * scale);
-
-        color.insert(color.end(), { t2color.r, t2color.g, t2color.b, t2color.a });
-
-        t1 = t2;
+        location.insert(location.end(), { curr.right.x, curr.right.y, curr.right.z });
+        color.insert(color.end(), { curr.color.r, curr.color.g, curr.color.b, curr.color.a });
     }
 
     glGenVertexArrays(1, vertex_array_id);

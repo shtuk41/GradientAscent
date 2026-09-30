@@ -38,10 +38,10 @@ int main()
 	GDALAllRegister();
 
 	//fs::path testgpxpath(R"(D:\Files\GradientAscent\data\Afternoon_Ride.gpx)");
-	fs::path testgpxpath(R"(D:\Files\GradientAscent\data\Lunch_Ride.gpx)");
-	//fs::path testgpxpath(R"(D:\Files\GradientAscent\data\Afternoon_Ride_09272026.gpx)");
+	//fs::path testgpxpath(R"(D:\Files\GradientAscent\data\Lunch_Ride.gpx)");
+	fs::path testgpxpath(R"(D:\Files\GradientAscent\data\Afternoon_Ride_09272026.gpx)");
 
-	std::vector<std::tuple<int, int, float, float>> routeData;
+	std::vector<std::tuple<int, int, float, float, float>> routeData;
 
 	try
 	{
@@ -65,6 +65,8 @@ int main()
 		float lastvalidElevation = std::numeric_limits<float>::quiet_NaN();;
 		//int line = 0;
 		//std::ofstream elevationFile("elevation.csv", std::ios::trunc);
+
+		int row_last = -9999, col_last = -9999;
 
 		for (auto& t : trackpoints)
 		{
@@ -100,14 +102,20 @@ int main()
 
 			GEO_DATA_ERROR pixelError = tiffHandler.getPixelCoordinate(t.lat, t.lon, row, col);
 
-			if (pixelError == GEO_DATA_ERROR::GEO_DATA_NO_ERROR)
+			bool samePoint = (row == row_last && col == col_last);
+
+
+			if (pixelError == GEO_DATA_ERROR::GEO_DATA_NO_ERROR && !samePoint)
 			{
-				float gradient;
-				computeGradient(tp, t, gradient);
-				routeData.push_back({ row, col, elevation, gradient });
+				float gradient, distance;
+				computeGradientDistance(tp, t, gradient, distance);
+				routeData.push_back({ row, col, elevation, gradient, distance });
 			}
 
 			tp = t;
+
+			row_last = row;
+			col_last = col;
 		}
 
 		std::cout << std::format("Saved points: {} vs reserved {}\n", routeData.size(), routeData.capacity());

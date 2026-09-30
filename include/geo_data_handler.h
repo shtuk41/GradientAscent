@@ -263,7 +263,7 @@ inline float toRadians(float degree)
 	return degree * M_PI / 180.0f;
 }
 
-GEO_DATA_ERROR computeGradient(trackpoint& first, trackpoint& second, float& gradient)
+GEO_DATA_ERROR computeGradientDistance(trackpoint& first, trackpoint& second, float& gradient, float& distance)
 {
 	float rise = second.elevation - first.elevation;
 
@@ -280,6 +280,8 @@ GEO_DATA_ERROR computeGradient(trackpoint& first, trackpoint& second, float& gra
 
 	float c = 2.0f * std::atan2(std::sqrt(a), std::sqrt(1.0f - a));
 	float run = EARTH_R * c; // horizontal distance in meters
+
+	distance = run;
 
 	// Handle edge case where points are in the exact same horizontal spot
 	if (run == 0.0f) 

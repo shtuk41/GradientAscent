@@ -81,7 +81,7 @@ inline RGBA gradientToColor(float percentGrade, float maxExpectedGrade = 20.0f)
 	return hsvToRgb(hue, 1.0f, 1.0f);
 }
 
-inline float getMinRouteGradient(const std::vector<std::tuple<int, int, float, float>>& rt)
+inline float getMinRouteGradient(const std::vector<std::tuple<int, int, float, float, float>>& rt)
 {
 	auto maxIt = std::ranges::min_element(rt,
 		{}, [](const auto& t)
@@ -92,7 +92,7 @@ inline float getMinRouteGradient(const std::vector<std::tuple<int, int, float, f
 	return std::get<3>(*maxIt);
 }
 
-inline float getMaxRouteGradient(const std::vector<std::tuple<int, int, float, float>>& rt)
+inline float getMaxRouteGradient(const std::vector<std::tuple<int, int, float, float, float>>& rt)
 {
 	auto maxIt = std::ranges::max_element(rt, 
 										{}, [](const auto& t) 
@@ -114,7 +114,7 @@ inline float getMeanRouteGradient(const std::vector<std::tuple<int, int, float, 
 	return mean;
 }
 
-inline void smoothGradient(std::vector<std::tuple<int, int, float, float>>& rt, size_t windowSize = 21)
+inline void smoothGradient(std::vector<std::tuple<int, int, float, float, float>>& rt, size_t windowSize = 21)
 {
 	if (rt.empty()) return;
 
