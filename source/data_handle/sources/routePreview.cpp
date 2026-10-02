@@ -37,7 +37,7 @@ void RoutePreview::Setup()
 
     float offsetX = 0.0f;
     float offsetY = 0.0f;
-    float trackWidth = 10.0f;
+    float trackWidth = 100.0f;
 
     if (!routeData.empty())
     {

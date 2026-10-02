@@ -63,6 +63,30 @@ public:
 		return positions;
 	}
 
+	virtual std::pair<float, float> getCenterLocation()
+	{
+		// Capture by const reference to avoid copying the whole collection
+		const auto& positions = getPositions();
+
+		if (positions.empty())
+			return { 0.0f, 0.0f }; // Clean brace initialization
+
+		float lat = 0.0f;
+		float lon = 0.0f;
+
+		// Use const auto& to prevent copying pairs on every loop iteration
+		for (const auto& loc : positions)
+		{
+			lat += loc.first;
+			lon += loc.second;
+		}
+
+		// Cast size to float explicitly to avoid implicit conversion warnings
+		const float count = static_cast<float>(positions.size());
+
+		return { lat / count, lon / count };
+	}
+
 	virtual std::tuple<float, float, float, float> getMinMaxLatLon() const
 	{
 		if (trackpoints.size() == 0)

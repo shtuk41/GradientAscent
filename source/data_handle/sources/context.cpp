@@ -21,12 +21,12 @@ Context::Context(GLFWwindow* window) : startSavingAll(false)
 	std::strncpy(screenShotScalePercent, "0", sizeof(screenShotScalePercent)-1);
 	std::strncpy(saveWidth, "7920",sizeof(saveWidth)-1);
 	std::strncpy(saveHeight, "6004",sizeof(saveHeight)-1);
-	orthoLeft = -1000;
-	orthoRight = 1000;
-	orthoBottom = -1000;
-	orthoTop = 1000;
+	orthoLeft = -10000;
+	orthoRight = 10000;
+	orthoBottom = -10000;
+	orthoTop = 10000;
 	orthoNear = -10000;
-	orthoFar = 20000;
+	orthoFar = 30000;
 }
 
 float Context::GetScreenshotScalePercent()

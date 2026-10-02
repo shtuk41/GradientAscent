@@ -36,10 +36,11 @@ static void glfw_error_callback(int error, const char* description)
 int main()
 {
 	GDALAllRegister();
+	CPLSetConfigOption("PROJ_LIB", "C:\\vcpkg\\packages\\proj_x64-windows\\share\\proj");
 
 	//fs::path testgpxpath(R"(D:\Files\GradientAscent\data\Afternoon_Ride.gpx)");
-	//fs::path testgpxpath(R"(D:\Files\GradientAscent\data\Lunch_Ride.gpx)");
-	fs::path testgpxpath(R"(D:\Files\GradientAscent\data\Afternoon_Ride_09272026.gpx)");
+	fs::path testgpxpath(R"(D:\Files\GradientAscent\data\Lunch_Ride.gpx)");
+	//fs::path testgpxpath(R"(D:\Files\GradientAscent\data\Afternoon_Ride_09272026.gpx)");
 
 	std::vector<std::tuple<int, int, float, float, float>> routeData;
 
@@ -52,6 +53,7 @@ int main()
 		auto [minlat, maxlat, minlon, maxlon] = track.getMinMaxLatLon();
 		std::cout << std::format("{}, {}, {}, {}\n", minlat, maxlat, minlon, maxlon);
 		ot_data_download(trackName + ".tif", minlat, maxlat, minlon, maxlon, 0.01f);
+		//warp_dem_to_utm(trackName + ".tif", trackName + "_5m.tif", 5.0);
 		fs::path geofilepath(trackName + ".tif");
 		tiff_data_handler tiffHandler(geofilepath);
 
@@ -67,6 +69,13 @@ int main()
 		//std::ofstream elevationFile("elevation.csv", std::ios::trunc);
 
 		int row_last = -9999, col_last = -9999;
+
+		auto centerLocation = track.getCenterLocation();
+		float center_x, center_y;
+		GEO_DATA_ERROR error = tiffHandler.getMetricCoordinates(centerLocation.first, centerLocation.second, center_x, center_y);
+
+		if (error != GEO_DATA_ERROR::GEO_DATA_NO_ERROR)
+			throw std::runtime_error("error while calculating metric coordinates for center location");
 
 		for (auto& t : trackpoints)
 		{
@@ -93,7 +102,7 @@ int main()
 			//elevationFile.write(writeLine.c_str(), writeLine.length());
 			//line += 1;
 
-			float difference = t.elevation - elevation;
+			//float difference = t.elevation - elevation;
 
 			//std::cout << std::format("{}tiff elevation {}, difference is {} {}\n", GREEN, elevation, difference, RESET);
 			tiffHandler.putTreckPoint(t.lat, t.lon);
@@ -109,7 +118,13 @@ int main()
 			{
 				float gradient, distance;
 				computeGradientDistance(tp, t, gradient, distance);
-				routeData.push_back({ row, col, elevation, gradient, distance });
+				float x, y;
+				GEO_DATA_ERROR error = tiffHandler.getMetricCoordinates(t.lat, t.lon, x, y);
+
+				if (error != GEO_DATA_ERROR::GEO_DATA_NO_ERROR)
+					throw std::runtime_error(std::format("error while caclulating metric coordinates for {} {}", t.lat, t.lon));
+
+				routeData.push_back({ int(x), -int(y), elevation * 10, gradient, distance });
 			}
 
 			tp = t;
@@ -229,17 +244,17 @@ int main()
 
 			if (Controls::moveback || Controls::key_w)
 			{
-				context->orthoLeft += 10;
-				context->orthoRight -= 10;
-				context->orthoBottom += 10;
-				context->orthoTop -= 10;
+				context->orthoLeft += 50;
+				context->orthoRight -= 50;
+				context->orthoBottom += 50;
+				context->orthoTop -= 50;
 			}
 			else if (Controls::moveforward || Controls::key_s)
 			{
-				context->orthoLeft -= 10;
-				context->orthoRight += 10;
-				context->orthoBottom -= 10;
-				context->orthoTop += 10;
+				context->orthoLeft -= 50;
+				context->orthoRight += 50;
+				context->orthoBottom -= 50;
+				context->orthoTop += 50;
 			}
 
 			cameraGlobal.computeViewProjectionMatrices(context->GetOrthoLeft(),

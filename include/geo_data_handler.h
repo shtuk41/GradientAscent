@@ -5,6 +5,11 @@
 #include <format>
 #include <limits>
 
+#include <gdal.h>
+#include <ogr_spatialref.h>
+#include <gdal_utils.h>
+
+
 #include <curl/curl.h>
 
 #include <common_defs.h>
@@ -80,6 +85,39 @@ public:
 		{
 			GDALClose(poDataset);
 		}
+	}
+
+	GEO_DATA_ERROR getMetricCoordinates(float lat, float lon, float& x, float& y)
+	{
+		OGRSpatialReference oSourceSRS;
+		oSourceSRS.SetWellKnownGeogCS("WGS84");
+		oSourceSRS.SetAxisMappingStrategy(OAMS_TRADITIONAL_GIS_ORDER); // Force Lon, Lat
+
+		OGRSpatialReference oTargetSRS;
+		oTargetSRS.importFromEPSG(32615); // UTM Zone 15N for Minnesota
+		oTargetSRS.SetAxisMappingStrategy(OAMS_TRADITIONAL_GIS_ORDER); // Force Easting, Northing
+
+		OGRCoordinateTransformation* poTransform = OGRCreateCoordinateTransformation(&oSourceSRS, &oTargetSRS);
+
+		double x_metric = lon;
+		double y_metric = lat;
+
+		GEO_DATA_ERROR stastus = GEO_DATA_ERROR::GEO_DATA_NO_ERROR;
+
+
+		if (poTransform && poTransform->Transform(1, &x_metric, &y_metric)) {
+			x = (float)x_metric;
+			y = (float)y_metric;
+		}
+		else
+		{
+			stastus = GEO_DATA_ERROR::GEO_DATA_INVALID_VALUE;
+		}
+
+		OGRCoordinateTransformation::DestroyCT(poTransform);
+
+		return stastus;
+
 	}
 
 	GEO_DATA_ERROR getElevation(float lat, float lon, float &elevation)
@@ -257,6 +295,8 @@ int ot_data_download(const std::string& filename, float minlat, float maxlat, fl
 	curl_global_cleanup();
 	return 0;
 }
+
+
 
 inline float toRadians(float degree) 
 {
