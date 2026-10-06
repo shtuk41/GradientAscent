@@ -39,8 +39,9 @@ int main()
 	CPLSetConfigOption("PROJ_LIB", "C:\\vcpkg\\packages\\proj_x64-windows\\share\\proj");
 
 	//fs::path testgpxpath(R"(D:\Files\GradientAscent\data\Afternoon_Ride.gpx)");
-	fs::path testgpxpath(R"(D:\Files\GradientAscent\data\Lunch_Ride.gpx)");
+	//fs::path testgpxpath(R"(D:\Files\GradientAscent\data\Lunch_Ride.gpx)");
 	//fs::path testgpxpath(R"(D:\Files\GradientAscent\data\Afternoon_Ride_09272026.gpx)");
+	fs::path testgpxpath(R"(D:\Files\GradientAscent\data\Victoria.gpx)");
 
 	std::vector<std::tuple<int, int, float, float, float>> routeData;
 
