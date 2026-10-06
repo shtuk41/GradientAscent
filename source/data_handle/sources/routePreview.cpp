@@ -14,7 +14,9 @@ struct RoadVertex
     RGBA color;
 };
 
-RoutePreview::RoutePreview(std::vector<std::tuple<int, int, float, float, float>>& rt) : routeData(rt)
+RoutePreview::RoutePreview(std::vector<std::tuple<int, int, float, float, float>>& rt, float useGradientScaler) : 
+                        routeData(rt),
+                        gradientScaler(useGradientScaler)
 {
 }
 
@@ -54,7 +56,7 @@ void RoutePreview::Setup()
         offsetY = sumY / routeData.size();
     }
 
-    float maxGradient = getMaxRouteGradient(routeData);
+    //float maxGradient = getMaxRouteGradient(routeData);
     size_t n = routeData.size();
     if (n < 2)
     {
@@ -117,7 +119,7 @@ void RoutePreview::Setup()
         left.z = pos.z;
         right.z = pos.z;
 
-        RGBA col = gradientToColor(std::get<3>(pt), maxGradient);
+        RGBA col = gradientToColor(std::get<3>(pt), gradientScaler);
         roadVertices.push_back({ left, right, col });
     }
 

@@ -183,8 +183,8 @@ int main()
 	Axes3d axes3d(1.2, 1.2, -1.2);
 	axes3d.Setup();
 
-	RoutePreview routePreview(routeData);
-	routePreview.Setup();
+	std::unique_ptr<RoutePreview> routePreview = std::make_unique<RoutePreview>(routeData, maximumGradient);
+	routePreview->Setup();
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -199,7 +199,7 @@ int main()
 
 	glDisable(GL_DEPTH_TEST);
 
-	int saveFrameColorClicked = 0;
+	float gradientScaleMax = maximumGradient;
 
 	while (!glfwWindowShouldClose(window.GetHandler()))
 	{
@@ -223,6 +223,15 @@ int main()
 			ImGui::Separator();
 			ImGui::Text("Minimum and maximum gradients %0.3f / %0.3f", minimumGraident, maximumGradient);
 			ImGui::Separator();
+			ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.85f);
+			ImGui::SliderFloat("##Gradient Scale Max", &gradientScaleMax, 1.0f, 20.0f);
+			ImGui::PopItemWidth();
+			ImGui::SameLine();
+			if (ImGui::Button("recalc")) 
+			{
+				routePreview = std::make_unique<RoutePreview>(routeData, gradientScaleMax);
+				routePreview->Setup();
+			}
 			ImGui::Separator();
 			ImGui::End();
 		}
@@ -292,10 +301,10 @@ int main()
 		//planeXY.SetProjection(projection_matrix);
 		//planeXY.Draw();
 
-		glUseProgram(routePreview.GetProgramId());
-		routePreview.UpdateModel(view_matrix);
-		routePreview.SetProjection(projection_matrix);
-		routePreview.Draw();
+		glUseProgram(routePreview->GetProgramId());
+		routePreview->UpdateModel(view_matrix);
+		routePreview->SetProjection(projection_matrix);
+		routePreview->Draw();
 
 		glfwSwapBuffers(window.GetHandler());
 	}

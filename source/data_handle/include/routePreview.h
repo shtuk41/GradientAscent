@@ -19,9 +19,10 @@ private:
     std::vector<GLfloat> color;
 
     std::vector<std::tuple<int, int, float, float, float>> routeData;
+    float gradientScaler;
 public:
 
-    RoutePreview(std::vector<std::tuple<int, int, float, float, float>> &routeData);
+    RoutePreview(std::vector<std::tuple<int, int, float, float, float>> &routeData, float useGradientScaler);
     ~RoutePreview();
 
     void SetProjection(glm::mat4 p);
