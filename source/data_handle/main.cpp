@@ -35,13 +35,17 @@ static void glfw_error_callback(int error, const char* description)
 
 int main()
 {
-	GDALAllRegister();
 	CPLSetConfigOption("PROJ_LIB", "C:\\vcpkg\\packages\\proj_x64-windows\\share\\proj");
+	CPLSetConfigOption("GDAL_DATA", "C:\\vcpkg\\packages\\gdal_x64-windows\\share\\gdal");
+	CPLSetConfigOption("OGR_INTERLEAVED_READING", "YES"); // Fixes the point accumulation limit
+	GDALAllRegister();
 
 	//fs::path testgpxpath(R"(D:\Files\GradientAscent\data\Afternoon_Ride.gpx)");
 	//fs::path testgpxpath(R"(D:\Files\GradientAscent\data\Lunch_Ride.gpx)");
 	//fs::path testgpxpath(R"(D:\Files\GradientAscent\data\Afternoon_Ride_09272026.gpx)");
 	fs::path testgpxpath(R"(D:\Files\GradientAscent\data\Victoria.gpx)");
+	//fs::path testosmpdfpath(R"(D:\Files\GradientAscent\data\north-america-latest.osm.pbf)");
+	fs::path testosmpdfpath(R"(D:\Files\GradientAscent\data\minnesota-261022.osm.pbf)");
 
 	std::vector<std::tuple<int, int, float, float, float>> routeData;
 
@@ -57,6 +61,9 @@ int main()
 		//warp_dem_to_utm(trackName + ".tif", trackName + "_5m.tif", 5.0);
 		fs::path geofilepath(trackName + ".tif");
 		tiff_data_handler tiffHandler(geofilepath);
+
+		std::cout << "Started loading osm.pdf file: " << testosmpdfpath.string() << std::endl;
+		os_data_handler osHandler(testosmpdfpath, minlon, minlat, maxlon, maxlat);
 
 		auto trackpoints = track.getTrackpoints();
 		std::cout << std::format("number of points: {}\n", trackpoints.size());
