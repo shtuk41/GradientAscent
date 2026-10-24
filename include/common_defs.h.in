@@ -2,7 +2,8 @@
 
 #include <limits>
 
-constexpr float invalid_value = std::numeric_limits<float>::quiet_NaN();
+constexpr float invalid_float_value = std::numeric_limits<float>::quiet_NaN();
+constexpr float invalid_int_value = std::numeric_limits<int>::quiet_NaN();
 namespace fs = std::filesystem;
 
 const std::string RESET = "\033[0m";

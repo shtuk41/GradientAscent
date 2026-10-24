@@ -90,7 +90,7 @@ public:
 	virtual std::tuple<float, float, float, float> getMinMaxLatLon() const
 	{
 		if (trackpoints.size() == 0)
-			return { invalid_value, invalid_value, invalid_value, invalid_value };
+			return { invalid_float_value, invalid_float_value, invalid_float_value, invalid_float_value };
 
 		float minlat = trackpoints[0].lat;
 		float maxlat = trackpoints[0].lat;
@@ -184,9 +184,9 @@ private:
 
 				trackpoint t;
 
-				t.lat = lat_attribute ? std::stof(lat_attribute->value()) : invalid_value;
-				t.lon = lon_attribute ? std::stof(lon_attribute->value()) : invalid_value;;
-				t.elevation = ele_node ? std::stof(ele_node->value()) : invalid_value;
+				t.lat = lat_attribute ? std::stof(lat_attribute->value()) : invalid_float_value;
+				t.lon = lon_attribute ? std::stof(lon_attribute->value()) : invalid_float_value;;
+				t.elevation = ele_node ? std::stof(ele_node->value()) : invalid_float_value;
 				
 				if ((time_stream >> std::chrono::parse("%FT%T%z", parsed_seconds))) 
 				{

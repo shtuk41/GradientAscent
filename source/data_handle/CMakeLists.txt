@@ -31,12 +31,19 @@ set (MY_SOURCES
 	"${CMAKE_SOURCE_DIR}/source/data_handle/sources/shaders.cpp"
 	"${CMAKE_SOURCE_DIR}/source/data_handle/sources/volume.cpp"
 	"${CMAKE_SOURCE_DIR}/source/data_handle/sources/routePreview.cpp"
+	"${CMAKE_SOURCE_DIR}/source/data_handle/sources/mapPreview.cpp"
+	"${CMAKE_SOURCE_DIR}/source/data_handle/sources/tiff_data_handler.cpp"
+	"${CMAKE_SOURCE_DIR}/source/data_handle/sources/os_data_handler.cpp"
+	"${CMAKE_SOURCE_DIR}/source/data_handle/sources/geo_data_utility.cpp"
+	
 )
 
 set(MY_HEADERS
     "${CMAKE_SOURCE_DIR}/source/data_handle/include/axes3d.h"
     "${CMAKE_SOURCE_DIR}/source/data_handle/include/axisPlane.h"
 	"${CMAKE_SOURCE_DIR}/source/data_handle/include/routePreview.h"
+	"${CMAKE_SOURCE_DIR}/source/data_handle/include/mapContainer.h"
+	"${CMAKE_SOURCE_DIR}/source/data_handle/include/mapPreview.h"
 	"${CMAKE_SOURCE_DIR}/source/data_handle/include/camera.h"
 	"${CMAKE_SOURCE_DIR}/source/data_handle/include/context.h"
 	"${CMAKE_SOURCE_DIR}/source/data_handle/include/controls.h"

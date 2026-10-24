@@ -49,6 +49,8 @@ int main()
 
 	std::vector<std::tuple<int, int, float, float, float>> routeData;
 
+	map_container mapContainer;
+
 	try
 	{
 		gpx track(testgpxpath);
@@ -63,7 +65,11 @@ int main()
 		tiff_data_handler tiffHandler(geofilepath);
 
 		std::cout << "Started loading osm.pdf file: " << testosmpdfpath.string() << std::endl;
-		os_data_handler osHandler(testosmpdfpath, minlon, minlat, maxlon, maxlat);
+		os_data_handler osHandler(&tiffHandler, testosmpdfpath, minlon, minlat, maxlon, maxlat);
+
+		size_t polygonsFilled = osHandler.fillMultipolygons(mapContainer);
+
+		std::cout << std::format("Number of polygons filled for drawing: {}\n", polygonsFilled);
 
 		auto trackpoints = track.getTrackpoints();
 		std::cout << std::format("number of points: {}\n", trackpoints.size());
