@@ -6,6 +6,7 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <utilities.h>
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -18,13 +19,13 @@
 #include "gdal_priv.h"
 #include "cpl_conv.h"
 
-#include <routePreview.h>
-#include <controls.h>
-#include <volume.h>
-#include <window.h>
 #include <activity_stream.h>
+#include <controls.h>
 #include <geo_data_handler.h>
-#include <utilities.h>
+#include <mapPreview.h>
+#include <routePreview.h>
+#include <window.h>
+
 
 std::unique_ptr<Context> context;
 
@@ -200,6 +201,9 @@ int main()
 	std::unique_ptr<RoutePreview> routePreview = std::make_unique<RoutePreview>(routeData, maximumGradient);
 	routePreview->Setup();
 
+	std::unique_ptr<MapPreview> mapPreview = std::make_unique<MapPreview>(&mapContainer);
+	mapPreview->Setup();
+
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO const& io = ImGui::GetIO(); (void)io;
@@ -319,6 +323,11 @@ int main()
 		routePreview->UpdateModel(view_matrix);
 		routePreview->SetProjection(projection_matrix);
 		routePreview->Draw();
+
+		glUseProgram(mapPreview->GetProgramId());
+		mapPreview->UpdateModel(view_matrix);
+		mapPreview->SetProjection(projection_matrix);
+		mapPreview->Draw();
 
 		glfwSwapBuffers(window.GetHandler());
 	}
