@@ -129,9 +129,10 @@ size_t os_data_handler::fillMultipolygons(map_container &container)
 							OGRPoint point;
 							poRing->getPoint(i, &point);
 
-							float x, y;
-							tiff_data->getMetricCoordinates(point.getX(), point.getY(), x, y);
-							poly.addPoint(point.getY(), point.getX(), y, x);
+							float x, y, z;
+							tiff_data->getMetricCoordinates(point.getY(), point.getX(), x, y);
+							tiff_data->getElevation(point.getY(), point.getX(), z);
+							poly.addPoint(point.getY(), point.getX(), x, y, z);
 						}
 						
 						container.polygons.push_back(poly);
@@ -167,9 +168,10 @@ size_t os_data_handler::fillMultipolygons(map_container &container)
 										OGRPoint point;
 										poRing->getPoint(i, &point);
 
-										float x, y;
+										float x, y, z;
 										tiff_data->getMetricCoordinates(point.getY(), point.getX(), x, y);
-										poly.addPoint(point.getY(), point.getX(), y, x);
+										tiff_data->getElevation(point.getY(), point.getX(), z);
+										poly.addPoint(point.getY(), point.getX(), x, y, z);
 									}
 
 									mpoly.add_polygon(poly);
