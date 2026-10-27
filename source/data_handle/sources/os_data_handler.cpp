@@ -82,6 +82,21 @@ size_t os_data_handler::fillMultipolygons(map_container &container)
 
 			while ((poFeature = poLayer->GetNextFeature()) != nullptr)
 			{
+				int buildingIdx = poFeature->GetFieldIndex("building");
+				if (buildingIdx < 0 || !poFeature->IsFieldSet(buildingIdx))
+				{
+					OGRFeature::DestroyFeature(poFeature);
+					continue; // Skip features without a 'building' tag (roads, water, etc.)
+				}
+
+				std::string buildingVal = poFeature->GetFieldAsString(buildingIdx);
+				if (buildingVal.empty() || buildingVal == "no")
+				{
+					OGRFeature::DestroyFeature(poFeature);
+					continue; // Skip if explicitly tagged as not a building
+				}
+
+
 				count++;
 
 				// 1. Extract Height / Levels Attributes
