@@ -44,7 +44,8 @@ int main()
 	//fs::path testgpxpath(R"(D:\Files\GradientAscent\data\Afternoon_Ride.gpx)");
 	//fs::path testgpxpath(R"(D:\Files\GradientAscent\data\Lunch_Ride.gpx)");
 	//fs::path testgpxpath(R"(D:\Files\GradientAscent\data\Afternoon_Ride_09272026.gpx)");
-	fs::path testgpxpath(R"(D:\Files\GradientAscent\data\Victoria.gpx)");
+	//fs::path testgpxpath(R"(D:\Files\GradientAscent\data\Victoria.gpx)");
+	fs::path testgpxpath(R"(D:\Files\GradientAscent\data\SaturdayRide.gpx)");
 	//fs::path testosmpdfpath(R"(D:\Files\GradientAscent\data\north-america-latest.osm.pbf)");
 	fs::path testosmpdfpath(R"(D:\Files\GradientAscent\data\minnesota-261022.osm.pbf)");
 
@@ -201,7 +202,7 @@ int main()
 	std::unique_ptr<RoutePreview> routePreview = std::make_unique<RoutePreview>(routeData, maximumGradient);
 	routePreview->Setup();
 
-	std::unique_ptr<MapPreview> mapPreview = std::make_unique<MapPreview>(&mapContainer);
+	std::unique_ptr<MapPreview> mapPreview = std::make_unique<MapPreview>(&mapContainer, &routeData);
 	mapPreview->Setup();
 
 	IMGUI_CHECKVERSION();

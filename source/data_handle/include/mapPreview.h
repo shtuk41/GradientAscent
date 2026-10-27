@@ -17,14 +17,15 @@ private:
     GLint position_attribute = -1;
     GLint color_attribute = -1;
 
-    std::vector<GLfloat> location;
-    std::vector<GLfloat> color;
+    std::vector<glm::vec3> location;
+    std::vector<glm::vec4> color;
     map_container* mapContainer;
+    std::vector<std::tuple<int, int, float, float, float>>* routeData;
 
 
 public:
 
-    MapPreview(map_container*  container);
+    MapPreview(map_container*  container, std::vector<std::tuple<int, int, float, float, float>>* rt);
     ~MapPreview();
 
     void SetProjection(glm::mat4 p);

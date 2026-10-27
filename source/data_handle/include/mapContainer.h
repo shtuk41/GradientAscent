@@ -20,6 +20,8 @@ public:
 		proj_coordinates.reserve(size);
 	}
 
+	size_t getNumberOfPoints() const { return numberOfPoints; }
+
 	void addPoint(float lat, float lon, float x, float y, float z)
 	{
 		geo_coordinates.push_back({ lat, lon });
@@ -58,29 +60,16 @@ public:
 		polygons.reserve(size);
 	}
 
+	size_t getNumberOfPolygons() const { return numberOfPolygons; }
+
 	void add_polygon(polygon &p)
 	{
 		polygons.push_back(p);
 	}
 
-	std::pair<float, float>  getGeoCoordinatesAt(size_t indexPolygon, size_t indexPoint)
+	const polygon& getPolygonAt(size_t indexPolygon)
 	{
-		if (polygons.size() > indexPolygon)
-		{
-			return polygons[indexPolygon].getGeoCoordinateAt(indexPoint);
-		}
-
-		return { invalid_float_value, invalid_float_value };
-	}
-
-	std::tuple<float, float, float>  getProjectionCoordinateAt(size_t indexPolygon, size_t indexPoint)
-	{
-		if (polygons.size() > indexPolygon)
-		{
-			return polygons[indexPolygon].getProjectedCoordinatesAt(indexPoint);
-		}
-
-		return { invalid_float_value, invalid_float_value, invalid_float_value };
+		return polygons[indexPolygon];
 	}
 };
 
