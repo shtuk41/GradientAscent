@@ -82,44 +82,100 @@ size_t os_data_handler::fillMultipolygons(map_container &container)
 
 			while ((poFeature = poLayer->GetNextFeature()) != nullptr)
 			{
+				map_object_type type;
+				std::string color_string;
+
+				bool found = false;
+
 				int buildingIdx = poFeature->GetFieldIndex("building");
-				if (buildingIdx < 0 || !poFeature->IsFieldSet(buildingIdx))
+				if (!(buildingIdx < 0 || !poFeature->IsFieldSet(buildingIdx)))
 				{
-					OGRFeature::DestroyFeature(poFeature);
-					continue; // Skip features without a 'building' tag (roads, water, etc.)
+					std::string buildingVal = poFeature->GetFieldAsString(buildingIdx);
+					if (!(buildingVal.empty() || buildingVal == "no"))
+					{
+						type = map_object_type::BUILDING;
+
+						int colorIdx = poFeature->GetFieldIndex("building:colour");
+						int roofColorIdx = poFeature->GetFieldIndex("roof:colour");
+
+						color_string = "#CCCCCC";
+
+						if (colorIdx >= 0 && poFeature->IsFieldSet(colorIdx))
+						{
+							color_string = poFeature->GetFieldAsString(colorIdx);
+						}
+						else if (roofColorIdx >= 0 && poFeature->IsFieldSet(roofColorIdx))
+						{
+							color_string = poFeature->GetFieldAsString(roofColorIdx);
+						}
+
+						double heightMeters = 0.0;
+
+						int heightIdx = poFeature->GetFieldIndex("height");
+						int levelsIdx = poFeature->GetFieldIndex("building:levels");
+
+						// Check if 'height' exists and is set
+						if (heightIdx >= 0 && poFeature->IsFieldSet(heightIdx))
+						{
+							heightMeters = poFeature->GetFieldAsDouble(heightIdx);
+						}
+						// Otherwise, check for 'building:levels'
+						else if (levelsIdx >= 0 && poFeature->IsFieldSet(levelsIdx))
+						{
+							int levels = poFeature->GetFieldAsInteger(levelsIdx);
+							heightMeters = levels * 3.0; // Rule of thumb: ~3 meters per level
+						}
+						else 
+						{
+							heightMeters = 10.0; // Default fallback height for buildings without tags
+						}
+
+						found = true;
+					}
 				}
 
-				std::string buildingVal = poFeature->GetFieldAsString(buildingIdx);
-				if (buildingVal.empty() || buildingVal == "no")
+				int naturalIdx = poFeature->GetFieldIndex("natural");
+				if (!(naturalIdx < 0 || !poFeature->IsFieldSet(naturalIdx)))
 				{
-					OGRFeature::DestroyFeature(poFeature);
-					continue; // Skip if explicitly tagged as not a building
+					std::string naturalVal = poFeature->GetFieldAsString(naturalIdx);
+					if (!(naturalVal.empty() || naturalVal == "no"))
+					{
+						if (naturalVal == "water" || naturalVal == "wetland")
+						{
+							type = map_object_type::WATERBODY;
+
+							int colorIdx = poFeature->GetFieldIndex("colour");
+							color_string = "#4169E1"; // Default fallback water color (Royal Blue)
+
+							if (colorIdx >= 0 && poFeature->IsFieldSet(colorIdx))
+							{
+								color_string = poFeature->GetFieldAsString(colorIdx);
+							}
+
+							found = true;
+						}
+					}
+				}
+				else
+				{
+					// Fallback check for waterway polygons (like riverbanks)
+					int waterwayIdx = poFeature->GetFieldIndex("waterway");
+					if (!(waterwayIdx < 0 || !poFeature->IsFieldSet(waterwayIdx)))
+					{
+						std::string waterwayVal = poFeature->GetFieldAsString(waterwayIdx);
+						if (!(waterwayVal.empty() || waterwayVal == "no"))
+						{
+							type = map_object_type::WATERBODY;
+							color_string = "#4169E1";
+							found = true;
+						}
+					}
 				}
 
+				if (!found)
+					continue;
 
 				count++;
-
-				// 1. Extract Height / Levels Attributes
-				// OSM tags are retrieved via GetFieldAsString or GetFieldAsDouble/Integer
-				double heightMeters = 0.0;
-
-				int heightIdx = poFeature->GetFieldIndex("height");
-				int levelsIdx = poFeature->GetFieldIndex("building:levels");
-
-				// Check if 'height' exists and is set
-				if (heightIdx >= 0 && poFeature->IsFieldSet(heightIdx))
-				{
-					heightMeters = poFeature->GetFieldAsDouble(heightIdx);
-				}
-				// Otherwise, check for 'building:levels'
-				else if (levelsIdx >= 0 && poFeature->IsFieldSet(levelsIdx))
-				{
-					int levels = poFeature->GetFieldAsInteger(levelsIdx);
-					heightMeters = levels * 3.0; // Rule of thumb: ~3 meters per level
-				}
-				else {
-					heightMeters = 10.0; // Default fallback height for buildings without tags
-				}
 
 				// 2. Extract Geometry (Polygon Footprint)
 				OGRGeometry* poGeom = poFeature->GetGeometryRef();
@@ -135,7 +191,7 @@ size_t os_data_handler::fillMultipolygons(map_container &container)
 
 						int numPoints = poRing->getNumPoints();
 
-						polygon poly(numPoints);
+						polygon poly(numPoints, type, osmToRgba(color_string));
 
 						//std::cout << "Created polygon: " << count << " number points: " << numPoints << std::endl;
 
@@ -175,7 +231,7 @@ size_t os_data_handler::fillMultipolygons(map_container &container)
 								if (poRing != nullptr)
 								{
 									int numPoints = poRing->getNumPoints();
-									polygon poly(numPoints);
+									polygon poly(numPoints, type, osmToRgba(color_string));
 
 									//std::cout << "Created polygon: " << count << " number points: " << numPoints << std::endl;
 									for (int i = 0; i < numPoints; ++i)

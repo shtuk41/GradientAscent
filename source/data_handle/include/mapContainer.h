@@ -5,6 +5,14 @@
 #include <utility>
 
 #include <common_defs.h>
+#include <utilities.h>
+
+enum class map_object_type
+{
+	NONE = 0,
+	BUILDING = 1,
+	WATERBODY = 2
+};
 
 class polygon
 {
@@ -12,9 +20,11 @@ private:
 	size_t numberOfPoints;
 	std::vector<std::pair<float, float>> geo_coordinates;
 	std::vector<std::tuple<float, float, float>> proj_coordinates;
+	map_object_type type;
+	RGBA color;
 
 public:
-	polygon(size_t size) : numberOfPoints(size)
+	polygon(size_t size, map_object_type t, RGBA c) : numberOfPoints(size), type(t), color(c)
 	{
 		geo_coordinates.reserve(size);
 		proj_coordinates.reserve(size);
@@ -47,6 +57,10 @@ public:
 
 		return { invalid_float_value, invalid_float_value, invalid_float_value };
 	}
+
+	map_object_type getType() const { return type; }
+
+	RGBA getColor() const { return color; }
 };
 
 class multipolygon

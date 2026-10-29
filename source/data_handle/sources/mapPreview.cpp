@@ -13,9 +13,9 @@
 
 #include <shaders.h>
 #include <mapPreview.h>
+#include <utilities.h>
 
 const float defined_height = 50.0f;
-const glm::vec4 houseColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 
 MapPreview::MapPreview(map_container* container, std::vector<std::tuple<int, int, float, float, float>>* rt) 
                     : mapContainer(container), routeData(rt)
@@ -92,6 +92,8 @@ void MapPreview::Setup()
         }
     }
 
+    int countMissing = 0;
+
     if (mapContainer->multipolygons.size() > 0)
     {
         size_t multiPolyNum = 0;
@@ -104,50 +106,134 @@ void MapPreview::Setup()
             {
                 auto poly = multipoly.getPolygonAt(polyIndex);
 
-                
-
-                for (size_t pointIndex = 0; pointIndex < poly.getNumberOfPoints(); pointIndex++)
+                if (poly.getType() == map_object_type::BUILDING)
                 {
-                    auto coordinates = poly.getProjectedCoordinatesAt(pointIndex);
-#ifdef _MAP_PREVIEW_DEBUG
-                    std::cout << std::format("multiPolyNum {} Poly {}, index {}: {},{},{}\n", 
-                                                multiPolyNum,
-                                                polyIndex, 
-                                                pointIndex, 
-                                                std::get<0>(coordinates) - offsetX,
-                                                -std::get<1>(coordinates) - offsetY,
-                                                std::get<2>(coordinates));
-#endif
-                    current = glm::vec3(std::get<0>(coordinates) - offsetX,
-                                -std::get<1>(coordinates) - offsetY,
-                                std::get<2>(coordinates) * 10);
+                    RGBA colorRgba = poly.getColor();
+                    const glm::vec4 houseColor = { colorRgba.r, colorRgba.g, colorRgba.b, colorRgba.a };
 
-                    if (pointIndex > 0)
+                    std::vector<glm::vec3> surface;
+                    surface.reserve(poly.getNumberOfPoints() - 1);
+
+                    for (size_t pointIndex = 0; pointIndex < poly.getNumberOfPoints(); pointIndex++)
                     {
-                        glm::vec3 h1 = prev;
-                        h1.z += defined_height;
+                        auto coordinates = poly.getProjectedCoordinatesAt(pointIndex);
+#ifdef _MAP_PREVIEW_DEBUG
+                        std::cout << std::format("multiPolyNum {} Poly {}, index {}: {},{},{}\n",
+                            multiPolyNum,
+                            polyIndex,
+                            pointIndex,
+                            std::get<0>(coordinates) - offsetX,
+                            -std::get<1>(coordinates) - offsetY,
+                            std::get<2>(coordinates));
+#endif
+                        current = glm::vec3(std::get<0>(coordinates) - offsetX,
+                            -std::get<1>(coordinates) - offsetY,
+                            std::get<2>(coordinates) * 10);
 
-                        glm::vec3 h2 = current;
-                        h2.z += defined_height;
+                        if (pointIndex > 0)
+                        {
+                            glm::vec3 h1 = prev;
+                            h1.z += defined_height;
 
-                        location.push_back(prev);
-                        location.push_back(current);
-                        location.push_back(h1);
+                            glm::vec3 h2 = current;
+                            h2.z += defined_height;
 
-                        location.push_back(h1);
-                        location.push_back(current);
-                        location.push_back(h2);
+                            location.push_back(prev);
+                            location.push_back(current);
+                            location.push_back(h1);
 
-                        color.push_back(houseColor);
-                        color.push_back(houseColor);
-                        color.push_back(houseColor);
-                        color.push_back(houseColor);
-                        color.push_back(houseColor);
-                        color.push_back(houseColor);
+                            location.push_back(h1);
+                            location.push_back(current);
+                            location.push_back(h2);
+
+                            color.push_back(houseColor);
+                            color.push_back(houseColor);
+                            color.push_back(houseColor);
+                            color.push_back(houseColor);
+                            color.push_back(houseColor);
+                            color.push_back(houseColor);
+                        }
+
+                        prev = current;
+
+                        if (pointIndex < poly.getNumberOfPoints() - 1)
+                        {
+                            current = glm::vec3(std::get<0>(coordinates) - offsetX,
+                                -std::get<1>(coordinates) - offsetY,
+                                (std::get<2>(coordinates) * 10) + defined_height);
+
+                            surface.push_back(current);
+                        }
                     }
 
-                    prev = current;
+                    auto surfacepoints = triangulateEarClipping(surface);
 
+                    if (surfacepoints.empty())
+                    {
+
+
+
+#ifdef _MAP_PREVIEW_DEBUG                       
+                        std::cout << "Warning: Triangulation failed for polygon with " << surface.size() << " vertices.\n";
+                        countMissing++;
+#endif
+                    }
+
+                    glm::vec4 roofcolor = { 1.0f,0.0f,0.0f,1.0f };
+
+                    for (auto& sp : surfacepoints)
+                    {
+                        location.push_back(sp);
+                        color.push_back(roofcolor);
+                    }
+                }
+
+                if (poly.getType() == map_object_type::WATERBODY)
+                {
+                    RGBA colorRgba = poly.getColor();
+                    const glm::vec4 waterColor = { colorRgba.r, colorRgba.g, colorRgba.b, colorRgba.a };
+
+                    std::vector<glm::vec3> surface;
+                    surface.reserve(poly.getNumberOfPoints() - 1);
+
+                    for (size_t pointIndex = 0; pointIndex < poly.getNumberOfPoints(); pointIndex++)
+                    {
+                        auto coordinates = poly.getProjectedCoordinatesAt(pointIndex);
+#ifdef _MAP_PREVIEW_DEBUG
+                        std::cout << std::format("multiPolyNum {} Poly {}, index {}: {},{},{}\n",
+                            multiPolyNum,
+                            polyIndex,
+                            pointIndex,
+                            std::get<0>(coordinates) - offsetX,
+                            -std::get<1>(coordinates) - offsetY,
+                            std::get<2>(coordinates));
+#endif
+
+                        if (pointIndex < poly.getNumberOfPoints() - 1)
+                        {
+                            current = glm::vec3(std::get<0>(coordinates) - offsetX,
+                                -std::get<1>(coordinates) - offsetY,
+                                (std::get<2>(coordinates) * 10));
+
+                            surface.push_back(current);
+                        }
+                    }
+
+                    auto surfacepoints = triangulateEarClipping(surface);
+
+                    if (surfacepoints.empty())
+                    {
+#ifdef _MAP_PREVIEW_DEBUG                       
+                        std::cout << "Warning: Triangulation failed for polygon with " << surface.size() << " vertices.\n";
+                        countMissing++;
+#endif
+                    }
+
+                    for (auto& sp : surfacepoints)
+                    {
+                        location.push_back(sp);
+                        color.push_back(waterColor);
+                    }
                 }
             }
 
